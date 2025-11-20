@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Install uv
 curl -LsSf https://astral.sh/uv/0.9.9/install.sh | sh
 
