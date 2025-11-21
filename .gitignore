@@ -1,2 +1,3 @@
 .venv
 **/*.env
+**/espn_fantasy_api_downloads

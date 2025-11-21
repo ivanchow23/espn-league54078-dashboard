@@ -16,3 +16,6 @@ else
     echo "Writing to .env"
     echo "ESPN_S2=$espn_s2" > .env
 fi
+
+# Download required data to machine
+./initialize_downloads_cache.sh
