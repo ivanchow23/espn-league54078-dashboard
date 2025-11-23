@@ -19,3 +19,6 @@ fi
 
 # Download required data to machine
 ./initialize_downloads_cache.sh
+
+# Generate data
+./generate_data.sh
