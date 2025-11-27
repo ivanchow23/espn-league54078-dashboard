@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 from datetime import datetime
 import dominate
 from dominate.tags import *
@@ -17,9 +18,9 @@ ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs",
 ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
 
 class HtmlDashboardGenerator():
-    def __init__(self, html_output_path=os.path.join(SCRIPT_DIR, "index.html")):
+    def __init__(self, html_output_folder_path):
         """ Default constructor. """
-        self._html_output_path = html_output_path
+        self._html_output_path = os.path.join(html_output_folder_path, "index.html")
 
         # Set-up HTML document
         self._doc = self._setup_html_doc()
@@ -54,7 +55,10 @@ class HtmlDashboardGenerator():
         return doc
 
 if __name__ == "__main__":
-    dashboard = HtmlDashboardGenerator()
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--folder", "-f", required=False, default=SCRIPT_DIR, help="Output folder of HTML dashboard.")
+    args = arg_parser.parse_args()
+    dashboard = HtmlDashboardGenerator(args.folder)
     doc = dashboard.get_doc()
 
     dp = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
@@ -90,3 +94,5 @@ if __name__ == "__main__":
             raw(mgl_html)
 
     dashboard.generate()
+    print(f"Output to {args.folder}")
+    print("Done.")
