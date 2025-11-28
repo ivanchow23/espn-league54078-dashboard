@@ -9,5 +9,6 @@ CURRENT_SEASON=2026
 LEAGUE_ID=54078
 
 # Input and output data directories
-ESPN_FANTASY_API_DOWNLOADS_DIR=$(pwd)/espn_fantasy_api_downloads
-DATA_GEN_OUTPUT_DIR="../docs/data"
+CONFIGS_SH_DIR=$(dirname "$(realpath $0)")
+ESPN_FANTASY_API_DOWNLOADS_DIR=${CONFIGS_SH_DIR}/espn_fantasy_api_downloads
+DATA_GEN_OUTPUT_DIR=${CONFIGS_SH_DIR}/../docs/data

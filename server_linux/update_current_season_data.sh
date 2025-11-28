@@ -1,6 +1,10 @@
 #!/bin/bash
 # Download and re-generate data that includes the latest current season
 
+echo "Running update_current_season_data.sh..."
+cd $(dirname "$(realpath $0)")
+echo "Changed working directory to $(pwd)"
+
 # Configurations
 source configs.sh
 source .env

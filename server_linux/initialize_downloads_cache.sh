@@ -1,6 +1,10 @@
 #!/bin/bash
 # Initialize machine with all of the latest downloads needed
 
+echo "Running initialize_downloads_cache.sh..."
+cd $(dirname "$(realpath $0)")
+echo "Changed working directory to $(pwd)"
+
 # Configurations
 source configs.sh
 source .env

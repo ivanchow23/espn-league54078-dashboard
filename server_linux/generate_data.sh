@@ -1,6 +1,10 @@
 #!/bin/bash
 # Generate data from downloads
 
+echo "Running generate_data.sh..."
+cd $(dirname "$(realpath $0)")
+echo "Changed working directory to $(pwd)"
+
 # Configurations
 source configs.sh
 

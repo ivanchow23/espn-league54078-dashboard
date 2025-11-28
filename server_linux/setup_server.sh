@@ -1,4 +1,9 @@
 #!/bin/bash
+# One-time server set-up script.
+
+echo "Running setup_server.sh..."
+cd $(dirname "$(realpath $0)")
+echo "Changed working directory to $(pwd)"
 
 # Prompt user for espn_s2 cookie if not already stored
 # This will be stored in a file locally but be .gitignore'ed
