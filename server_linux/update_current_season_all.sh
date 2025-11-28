@@ -23,4 +23,4 @@ uv run ../html_dashboard_generator/html_dashboard_generator.py -f ${HTML_DASHBOA
 # Push contents to GitHub Pages
 git add ../docs
 git commit -m "Update dashboard/data ${formatted_datetime}" -m "Auto-generated commit with update_current_season_all.sh."
-#git push origin master
+git push origin master
