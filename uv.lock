@@ -2,12 +2,6 @@ version = 1
 revision = 3
 requires-python = "==3.13.9"
 
-[manifest]
-members = [
-    "espn-league54078-dashboard",
-    "espn-league54078-fantasy-stats",
-]
-
 [[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"

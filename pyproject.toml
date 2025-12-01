@@ -9,10 +9,5 @@ dependencies = [
     "streamlit==1.51.0",
 ]
 
-[tool.uv.workspace]
-members = [
-    "espn_league54078_fantasy_stats",
-]
-
 [tool.uv.sources]
-espn-league54078-fantasy-stats = { workspace = true, editable = true }
+espn-league54078-fantasy-stats = { path = "./espn_league54078_fantasy_stats", editable = true }
