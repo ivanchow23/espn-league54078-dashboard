@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = "==3.13.9"
 dependencies = [
     "espn-league54078-fantasy-stats",
+    "streamlit==1.51.0",
 ]
 
 [tool.uv.workspace]
