@@ -243,9 +243,11 @@ wheels = [
 [[package]]
 name = "espn-league54078-dashboard"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "espn-league54078-fantasy-stats" },
+    { name = "ipykernel" },
+    { name = "nbformat" },
     { name = "pyarrow" },
     { name = "streamlit" },
 ]
@@ -253,6 +255,8 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "espn-league54078-fantasy-stats", editable = "espn_league54078_fantasy_stats" },
+    { name = "ipykernel", specifier = "==7.1.0" },
+    { name = "nbformat", specifier = "==5.3.0" },
     { name = "pyarrow", specifier = "==20.0.0" },
     { name = "streamlit", specifier = "==1.51.0" },
 ]
@@ -266,10 +270,8 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "dominate" },
     { name = "html5lib" },
-    { name = "ipykernel" },
     { name = "kaleido" },
     { name = "lxml" },
-    { name = "nbformat" },
     { name = "pandas" },
     { name = "plotly" },
     { name = "requests" },
@@ -283,10 +285,8 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = "==4.10.0" },
     { name = "dominate", specifier = "==2.9.0" },
     { name = "html5lib", specifier = "==1.1" },
-    { name = "ipykernel", specifier = "==7.1.0" },
     { name = "kaleido", specifier = "==0.2.1" },
     { name = "lxml", specifier = "==6.0.2" },
-    { name = "nbformat", specifier = "==5.3.0" },
     { name = "pandas", specifier = "==2.3.3" },
     { name = "plotly", specifier = "==6.5.0" },
     { name = "requests", specifier = "==2.27.0" },

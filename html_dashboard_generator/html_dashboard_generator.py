@@ -4,11 +4,11 @@ from datetime import datetime
 import dominate
 from dominate.tags import *
 from dominate.util import raw
-from espn_nhlapi_analysis.espn_fantasy_api.daily_points import DailyPoints
-from espn_nhlapi_analysis.espn_fantasy_api.points_by_position import PointsByPosition
-from espn_nhlapi_analysis.espn_fantasy_api.daily_points_by_position import DailyPointsByPosition
-from espn_nhlapi_analysis.espn_fantasy_api.player_with_different_owners import PlayerWithDifferentOwners
-from espn_nhlapi_analysis.espn_fantasy_api.man_games_lost import ManGamesLost
+from stats.daily_points import DailyPoints
+from stats.points_by_position import PointsByPosition
+from stats.daily_points_by_position import DailyPointsByPosition
+from stats.player_with_different_owners import PlayerWithDifferentOwners
+from stats.man_games_lost import ManGamesLost
 import os
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
