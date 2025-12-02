@@ -4,9 +4,7 @@ from datetime import datetime
 import dominate
 from dominate.tags import *
 from dominate.util import raw
-from stats.daily_points import DailyPoints
 from stats.points_by_position import PointsByPosition
-from stats.daily_points_by_position import DailyPointsByPosition
 from stats.player_with_different_owners import PlayerWithDifferentOwners
 from stats.man_games_lost import ManGamesLost
 import os
@@ -61,35 +59,21 @@ if __name__ == "__main__":
     dashboard = HtmlDashboardGenerator(args.folder)
     doc = dashboard.get_doc()
 
-    dp = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
     pbp = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
-    dpbp = DailyPointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
     pwdo = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH)
     mgl = ManGamesLost(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 
-    dp_fig = dp.get_cumulative_points_plot(key="appliedTotal", season=SEASON)
-    dp_norm_avg_fig = dp.get_cumulative_points_norm_by_avg_plot(key="appliedTotal", season=SEASON)
-    dp_norm_first_fig = dp.get_cumulative_points_norm_by_first_plot(key="appliedTotal", season=SEASON)
     pbp_fig = pbp.get_stats_table(season=SEASON)
-    dpbp_fig = dpbp.get_plots_fig(season=SEASON)
     pwdo_fig = pwdo.get_table_fig(season=SEASON)
     mgl_fig = mgl.get_table_fig(season=SEASON)
 
-    dp_html = dp_fig.to_html(include_plotlyjs=False, full_html=False)
-    dp_norm_avg_html = dp_norm_avg_fig.to_html(include_plotlyjs=False, full_html=False)
-    dp_norm_first_html = dp_norm_first_fig.to_html(include_plotlyjs=False, full_html=False)
     pbp_html = pbp_fig.to_html(include_plotlyjs=False, full_html=False)
-    dpbp_html = dpbp_fig.to_html(include_plotlyjs=False, full_html=False)
     pwdo_html = pwdo_fig.to_html(include_plotlyjs=False, full_html=False)
     mgl_html = mgl_fig.to_html(include_plotlyjs=False, full_html=False)
 
     with doc:
         with div() as d:
-            raw(dp_html)
-            raw(dp_norm_avg_html)
-            raw(dp_norm_first_html)
             raw(pbp_html)
-            raw(dpbp_html)
             raw(pwdo_html)
             raw(mgl_html)
 
