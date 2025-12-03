@@ -11,6 +11,22 @@ class DailyPoints():
         # Dataframe of cumulative sums
         self._cumsum_df = self._get_cumsum_df()
 
+    def get_cumulative_points_df(self, season):
+        """ Returns dataframe for cumulative points for given season. """
+        return self._cumsum_df[self._cumsum_df['season'] == season]
+
+    def get_normalized_by_avg_df(self, key, season):
+        """ Returns dataframe for normalized by average for given season for
+            the given stat (key). """
+        # Filter for season
+        season_df = self._cumsum_df[self._cumsum_df['season'] == season]
+
+        # Normalize
+        normalized_df = season_df.groupby('scoringPeriodId')[key].apply(lambda x: round(x / x.mean(), 3))
+        normalized_df.index = normalized_df.index.droplevel('scoringPeriodId')
+        season_df[f'{key} (norm. by avg)'] = normalized_df
+        return season_df
+
     def get_seasons(self):
         """ Returns list of valid seasons contained in the data. """
         return self._daily_rosters_df['season'].unique()
