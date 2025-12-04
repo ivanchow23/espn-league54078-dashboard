@@ -1,5 +1,6 @@
 from daily_points import DailyPoints
 import os
+from points_by_position import PointsByPosition
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -97,6 +98,7 @@ daily_points_df = get_daily_points_cumulative_df(season=CURRENT_SEASON)
 daily_points_norm_by_avg_df = get_daily_points_norm_by_avg_df(season=CURRENT_SEASON)
 
 # Daily plots stats containers
+st.markdown("#### Daily Points Stats")
 daily_pts_cols = st.columns([4, 1])
 daily_pts_plot_container = daily_pts_cols[0].container(border=True, height="stretch", width="stretch")
 daily_pts_stats_container = daily_pts_cols[1].container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
@@ -114,3 +116,34 @@ elif daily_pts_num_days_select == "Last 14 Days":
 elif daily_pts_num_days_select == "Last 30 Days":
     daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(daily_points_df, last_num_days=30))
     update_daily_stats_metrics(daily_pts_stats_container, daily_points_df, last_num_days=30)
+
+# Points by position stats containers
+st.markdown("#### Points by Position Stats (Compared to League Average)")
+points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=CURRENT_SEASON)
+points_by_position_avgs_container = st.container(border=True, height="stretch", width="stretch")
+points_by_position_cols = st.columns(len(points_by_position_df['Owner'].unique()))
+
+points_by_position_owner_containers = []
+for col in points_by_position_cols:
+    points_by_position_owner_containers.append(col.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center"))
+
+league_avg_pts = round(points_by_position_df['Total Points'].mean(), 2)
+league_f_avg_pts = round(points_by_position_df['Forwards'].mean(), 2)
+league_d_avg_pts = round(points_by_position_df['Defencemen'].mean(), 2)
+league_g_avg_pts = round(points_by_position_df['Goalies'].mean(), 2)
+points_by_position_avgs_container.markdown(f"###### League Averages | Total: {league_avg_pts} | Forwards: {league_f_avg_pts} | Defencemen: {league_d_avg_pts} | Goalies: {league_g_avg_pts}")
+
+for i, (owner, owner_df) in enumerate(points_by_position_df.groupby('Owner', sort=False)):
+    total_pts = owner_df['Total Points'].iloc[0]
+    f_pts = owner_df['Forwards'].iloc[0]
+    f_percent_delta = owner_df['Forwards +/- Avg'].iloc[0]
+    d_pts = owner_df['Defencemen'].iloc[0]
+    d_percent_delta = owner_df['Defencemen +/- Avg'].iloc[0]
+    g_pts = owner_df['Goalies'].iloc[0]
+    g_percent_delta = owner_df['Goalies +/- Avg'].iloc[0]
+
+    points_by_position_owner_containers[i].markdown(f"{i+1} - {owner}")
+    points_by_position_owner_containers[i].metric("Total", value=total_pts, delta=None)
+    points_by_position_owner_containers[i].metric("Forwards", value=f_pts, delta=f"{f_percent_delta}%")
+    points_by_position_owner_containers[i].metric("Defencemen", value=d_pts, delta=f"{d_percent_delta}%")
+    points_by_position_owner_containers[i].metric("Goalies", value=g_pts, delta=f"{g_percent_delta}%")
