@@ -1,9 +1,12 @@
 import os
 import plotly.graph_objects as go
-from stats.daily_points import DailyPoints
 import streamlit as st
+import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join("..", "stats"))
+from daily_points import DailyPoints
+
 ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
 ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
 
