@@ -10,12 +10,10 @@ ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "doc
 CURRENT_SEASON = 20252026
 
 # ---------------------------------------- Helper Functions ---------------------------------------
-@st.cache_data
 def get_daily_points_cumulative_df(season):
     df = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_cumulative_points_df(season)
     return df
 
-@st.cache_data
 def get_daily_points_norm_by_avg_df(season):
     df = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_normalized_by_avg_df('appliedTotal', season)
     return df
