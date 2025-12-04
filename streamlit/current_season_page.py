@@ -118,7 +118,7 @@ elif daily_pts_num_days_select == "Last 30 Days":
     update_daily_stats_metrics(daily_pts_stats_container, daily_points_df, last_num_days=30)
 
 # Points by position stats containers
-st.markdown("#### Points by Position Stats (Compared to League Average)")
+st.markdown("#### Points by Position Stats")
 points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=CURRENT_SEASON)
 points_by_position_avgs_container = st.container(border=True, height="stretch", width="stretch")
 points_by_position_cols = st.columns(len(points_by_position_df['Owner'].unique()))
@@ -131,7 +131,7 @@ league_avg_pts = round(points_by_position_df['Total Points'].mean(), 2)
 league_f_avg_pts = round(points_by_position_df['Forwards'].mean(), 2)
 league_d_avg_pts = round(points_by_position_df['Defencemen'].mean(), 2)
 league_g_avg_pts = round(points_by_position_df['Goalies'].mean(), 2)
-points_by_position_avgs_container.markdown(f"###### League Averages | Total: {league_avg_pts} | Forwards: {league_f_avg_pts} | Defencemen: {league_d_avg_pts} | Goalies: {league_g_avg_pts}")
+points_by_position_avgs_container.write(f"League Averages | Total: {league_avg_pts} | Forwards: {league_f_avg_pts} | Defencemen: {league_d_avg_pts} | Goalies: {league_g_avg_pts}")
 
 for i, (owner, owner_df) in enumerate(points_by_position_df.groupby('Owner', sort=False)):
     total_pts = owner_df['Total Points'].iloc[0]
