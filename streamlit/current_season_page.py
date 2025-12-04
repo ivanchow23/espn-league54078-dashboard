@@ -4,7 +4,7 @@ import streamlit as st
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.join("..", "stats"))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "stats")))
 from daily_points import DailyPoints
 
 ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
