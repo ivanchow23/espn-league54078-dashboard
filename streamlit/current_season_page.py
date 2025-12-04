@@ -54,8 +54,6 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
         earliest_scoring_period = latest_scoring_period - last_num_days
         df = df[(df['scoringPeriodId'] >= (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
 
-    print(latest_scoring_period)
-    print(earliest_scoring_period)
     # League average
     # Take the latest scoring period data point and average across all owners
     num_owners = len(df['owner'].unique())
@@ -81,7 +79,6 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
         start_pts = owner_df[owner_df['scoringPeriodId'] == earliest_scoring_period]['appliedTotal'].iloc[0]
         curr_pts = owner_df[owner_df['scoringPeriodId'] == latest_scoring_period]['appliedTotal'].iloc[0]
         change_pts = round(curr_pts - start_pts, 2)
-        print(f"{owner} {change_pts}")
         if change_pts > highest_total_change_pts:
             highest_total_change_pts = change_pts
             highest_total_change_owner = owner
