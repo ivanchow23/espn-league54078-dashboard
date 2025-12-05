@@ -1,5 +1,7 @@
 from daily_points import DailyPoints
 import os
+import pandas as pd
+from player_with_different_owners import PlayerWithDifferentOwners
 from points_by_position import PointsByPosition
 import plotly.graph_objects as go
 import streamlit as st
@@ -147,3 +149,26 @@ for i, (owner, owner_df) in enumerate(points_by_position_df.groupby('Owner', sor
     points_by_position_owner_containers[i].metric("Forwards", value=f_pts, delta=f"{f_percent_delta}%")
     points_by_position_owner_containers[i].metric("Defencemen", value=d_pts, delta=f"{d_percent_delta}%")
     points_by_position_owner_containers[i].metric("Goalies", value=g_pts, delta=f"{g_percent_delta}%")
+
+# Players with different owners stats containers
+st.markdown("#### Players with Different Owners Stats")
+st.markdown("##### _\"Roope Stats\"_")
+players_diff_owners_num_cols_per_row = 3
+players_diff_owners_dicts = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH).get_dicts(CURRENT_SEASON)
+
+for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_per_row):
+    cols = st.columns(players_diff_owners_num_cols_per_row)
+    for j, col in enumerate(cols):
+        idx = i + j
+        if idx >= len(players_diff_owners_dicts):
+            break
+
+        player_dict = players_diff_owners_dicts[idx]
+        player_container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
+        player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=200)
+        df = pd.DataFrame(player_dict['Owners'])
+
+        # Cast to string type to somehow make cols appear left-aligned
+        # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
+        df = df.astype(str)
+        player_container.dataframe(df, hide_index=True)
