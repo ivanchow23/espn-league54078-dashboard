@@ -10,8 +10,6 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
 ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
 
-CURRENT_SEASON = 20252026
-
 # ---------------------------------------- Helper Functions ---------------------------------------
 def get_daily_points_cumulative_df(season):
     df = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_cumulative_points_df(season)
@@ -93,36 +91,48 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
 # -------------------------------------- Page content start ---------------------------------------
 # Page configs
 st.set_page_config(layout="wide")
-st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Dashboard - Current Season ({CURRENT_SEASON})</h2>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Dashboard</h2>", unsafe_allow_html=True)
 
-# Load data
-daily_points_df = get_daily_points_cumulative_df(season=CURRENT_SEASON)
-daily_points_norm_by_avg_df = get_daily_points_norm_by_avg_df(season=CURRENT_SEASON)
+# Raw data
+daily_points_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
+seasons = sorted(daily_points_df['season'].unique(), reverse=True)
+seasons_select_options = sorted(daily_points_df['season'].astype(str).unique(), reverse=True)
+seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
+
+# Select season to show
+st.markdown("#### Season to Display")
+season_select_cols = st.columns([1, 3])
+selected_season_str = season_select_cols[0].selectbox(label="Show Season", options=seasons_select_options, key=seasons, label_visibility='collapsed')
+if "Current" in selected_season_str:
+    selected_season = seasons[seasons.index(int(selected_season_str.strip(" (Current)")))]
+else:
+    selected_season = seasons[seasons.index(int(selected_season_str))]
 
 # Daily plots stats containers
 st.markdown("#### Daily Points Stats")
+season_daily_points_df = get_daily_points_cumulative_df(season=selected_season)
 daily_pts_cols = st.columns([4, 1])
 daily_pts_plot_container = daily_pts_cols[0].container(border=True, height="stretch", width="stretch")
 daily_pts_stats_container = daily_pts_cols[1].container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
 daily_pts_num_days_select = daily_pts_stats_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="daily_pts_num_days")
 
 if daily_pts_num_days_select == "Full Season":
-    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(daily_points_df))
-    update_daily_stats_metrics(daily_pts_stats_container, daily_points_df)
+    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(season_daily_points_df))
+    update_daily_stats_metrics(daily_pts_stats_container, season_daily_points_df)
 elif daily_pts_num_days_select == "Last 7 Days":
-    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(daily_points_df, last_num_days=7))
-    update_daily_stats_metrics(daily_pts_stats_container, daily_points_df, last_num_days=7)
+    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(season_daily_points_df, last_num_days=7))
+    update_daily_stats_metrics(daily_pts_stats_container, season_daily_points_df, last_num_days=7)
 elif daily_pts_num_days_select == "Last 14 Days":
-    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(daily_points_df, last_num_days=14))
-    update_daily_stats_metrics(daily_pts_stats_container, daily_points_df, last_num_days=14)
+    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(season_daily_points_df, last_num_days=14))
+    update_daily_stats_metrics(daily_pts_stats_container, season_daily_points_df, last_num_days=14)
 elif daily_pts_num_days_select == "Last 30 Days":
-    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(daily_points_df, last_num_days=30))
-    update_daily_stats_metrics(daily_pts_stats_container, daily_points_df, last_num_days=30)
+    daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(season_daily_points_df, last_num_days=30))
+    update_daily_stats_metrics(daily_pts_stats_container, season_daily_points_df, last_num_days=30)
 
 # Points by position stats containers
 st.markdown("#### Points by Position Stats")
 points_by_position_num_cols_per_row = 4
-points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=CURRENT_SEASON)
+points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season)
 
 league_avg_pts = round(points_by_position_df['Total Points'].mean(), 2)
 league_f_avg_pts = round(points_by_position_df['Forwards'].mean(), 2)
@@ -158,7 +168,7 @@ for i in range(0, num_owners + 1, points_by_position_num_cols_per_row):
 st.markdown("#### Players with Different Owners Stats")
 st.markdown("##### _\"Roope Stats\"_")
 players_diff_owners_num_cols_per_row = 3
-players_diff_owners_dicts = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH).get_dicts(CURRENT_SEASON)
+players_diff_owners_dicts = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH).get_dicts(selected_season)
 
 for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_per_row):
     cols = st.columns(players_diff_owners_num_cols_per_row)
