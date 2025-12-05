@@ -157,12 +157,12 @@ for i in range(0, num_owners + 1, points_by_position_num_cols_per_row):
             idx = i + j - 1
             if idx >= num_owners:
                 break
-            df = points_by_position_df.loc[idx]
-            container.write(f"{idx + 1} - {df['Owner']}")
-            container.metric("Total", value=df['Total Points'], delta=None)
-            container.metric("Forwards", value=df['Forwards'], delta=df['Forwards +/- Avg'])
-            container.metric("Defencemen", value=df['Defencemen'], delta=df['Defencemen +/- Avg'])
-            container.metric("Goalies", value=df['Goalies'], delta=df['Goalies +/- Avg'])
+            df = points_by_position_df.iloc[[idx]]
+            container.write(f"{idx + 1} - {df['Owner'].iloc[0]}")
+            container.metric("Total", value=df['Total Points'].iloc[0], delta=None)
+            container.metric("Forwards", value=df['Forwards'].iloc[0], delta=df['Forwards +/- Avg'].iloc[0])
+            container.metric("Defencemen", value=df['Defencemen'].iloc[0], delta=df['Defencemen +/- Avg'].iloc[0])
+            container.metric("Goalies", value=df['Goalies'].iloc[0], delta=df['Goalies +/- Avg'].iloc[0])
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")

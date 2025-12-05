@@ -48,7 +48,7 @@ class PointsByPosition():
                 stat_dict[pos] = pos_pts
                 stat_dict[f'{pos} +/- Avg'] = pos_plus_minus_avg
             season_stats_df = pd.concat([season_stats_df, pd.DataFrame([stat_dict])], ignore_index=True)
-        season_stats_df = season_stats_df.sort_values(by='Total Points', ascending=False).reset_index()
+        season_stats_df = season_stats_df.sort_values(by='Total Points', ascending=False).reset_index(drop=True)
 
         # Cell colours to highlight +/- percentages
         cell_colours = []
