@@ -121,34 +121,38 @@ elif daily_pts_num_days_select == "Last 30 Days":
 
 # Points by position stats containers
 st.markdown("#### Points by Position Stats")
+points_by_position_num_cols_per_row = 4
 points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=CURRENT_SEASON)
-points_by_position_avgs_container = st.container(border=True, height="stretch", width="stretch")
-points_by_position_cols = st.columns(len(points_by_position_df['Owner'].unique()))
-
-points_by_position_owner_containers = []
-for col in points_by_position_cols:
-    points_by_position_owner_containers.append(col.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center"))
 
 league_avg_pts = round(points_by_position_df['Total Points'].mean(), 2)
 league_f_avg_pts = round(points_by_position_df['Forwards'].mean(), 2)
 league_d_avg_pts = round(points_by_position_df['Defencemen'].mean(), 2)
 league_g_avg_pts = round(points_by_position_df['Goalies'].mean(), 2)
-points_by_position_avgs_container.write(f"League Averages | Total: {league_avg_pts} | Forwards: {league_f_avg_pts} | Defencemen: {league_d_avg_pts} | Goalies: {league_g_avg_pts}")
 
-for i, (owner, owner_df) in enumerate(points_by_position_df.groupby('Owner', sort=False)):
-    total_pts = owner_df['Total Points'].iloc[0]
-    f_pts = owner_df['Forwards'].iloc[0]
-    f_percent_delta = owner_df['Forwards +/- Avg'].iloc[0]
-    d_pts = owner_df['Defencemen'].iloc[0]
-    d_percent_delta = owner_df['Defencemen +/- Avg'].iloc[0]
-    g_pts = owner_df['Goalies'].iloc[0]
-    g_percent_delta = owner_df['Goalies +/- Avg'].iloc[0]
+# Write cells for all owners plus league average as the first cell
+num_owners = len(points_by_position_df['Owner'].unique())
+for i in range(0, num_owners + 1, points_by_position_num_cols_per_row):
+    cols = st.columns(points_by_position_num_cols_per_row)
+    for j, col in enumerate(cols):
+        container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
 
-    points_by_position_owner_containers[i].markdown(f"{i+1} - {owner}")
-    points_by_position_owner_containers[i].metric("Total", value=total_pts, delta=None)
-    points_by_position_owner_containers[i].metric("Forwards", value=f_pts, delta=f"{f_percent_delta}%")
-    points_by_position_owner_containers[i].metric("Defencemen", value=d_pts, delta=f"{d_percent_delta}%")
-    points_by_position_owner_containers[i].metric("Goalies", value=g_pts, delta=f"{g_percent_delta}%")
+        # Write league average for first cell
+        if i + j == 0:
+            container.write("League Average")
+            container.metric("Total", value=league_avg_pts, delta=None)
+            container.metric("Forwards", value=league_f_avg_pts, delta=None)
+            container.metric("Defencemen", value=league_d_avg_pts, delta=None)
+            container.metric("Goalies", value=league_g_avg_pts, delta=None)
+        else:
+            idx = i + j - 1
+            if idx >= num_owners:
+                break
+            df = points_by_position_df.loc[idx]
+            container.write(f"{idx + 1} - {df['Owner']}")
+            container.metric("Total", value=df['Total Points'], delta=None)
+            container.metric("Forwards", value=df['Forwards'], delta=df['Forwards +/- Avg'])
+            container.metric("Defencemen", value=df['Defencemen'], delta=df['Defencemen +/- Avg'])
+            container.metric("Goalies", value=df['Goalies'], delta=df['Goalies +/- Avg'])
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
