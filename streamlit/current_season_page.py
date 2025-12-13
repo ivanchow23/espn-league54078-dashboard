@@ -95,7 +95,7 @@ def get_draft_birth_country_fig(owner, series):
     """ Helper function to return a plotly figure for draft birth country data. """
     wedge_colour_map={"CAN": '#cd5c5c', "USA": '#4169e1', "RUS/USSR": '#fffafa', "SWE": '#ffd700',
                       "FIN": '#000080', "CZE": '#add8e6', "SVK": '#add8e6', "Czechoslovakia": '#add8e6',
-                      "SUI": '#b22222', "GER": '#696969'}
+                      "SUI": '#b22222', "DEN": '#911b1b', "NOR": '#da2a2a', "GER": '#696969'}
 
     fig = go.Figure()
     wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in series.index]
@@ -113,7 +113,7 @@ def get_draft_age_fig(owner, series):
 
     fig = go.Figure()
     fig.add_trace(go.Bar(x=series.index, y=series.values))
-    fig.update_layout(title=f"Player Age", xaxis_title=f"Age<br>Min = {min} | Mean = {mean} | Max = {max}",
+    fig.update_layout(title=f"Player Age", xaxis_title=f"Age (Min = {min} | Mean = {mean} | Max = {max})",
                       yaxis_title="# of Picks", margin=dict(t=50, b=10), height=300)
     return fig
 
