@@ -133,14 +133,17 @@ st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Dashboard</h2>",
 
 # Raw data
 daily_points_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
-seasons = sorted(daily_points_df['season'].unique(), reverse=True)
-seasons_select_options = sorted(daily_points_df['season'].astype(str).unique(), reverse=True)
-seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
 
 # Select season to show
 st.markdown("#### Season to Display")
+seasons = sorted(daily_points_df['season'].unique(), reverse=True)
+seasons_select_options = sorted(daily_points_df['season'].astype(str).unique(), reverse=True)
+seasons_select_options = [season[:4] + "-" + season[4:] for season in seasons_select_options]
+seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
+
 season_select_cols = st.columns([1, 3])
 selected_season_str = season_select_cols[0].selectbox(label="Show Season", options=seasons_select_options, key=seasons, label_visibility='collapsed')
+selected_season_str = selected_season_str.replace("-", "")
 if "Current" in selected_season_str:
     selected_season = seasons[seasons.index(int(selected_season_str.strip(" (Current)")))]
 else:
