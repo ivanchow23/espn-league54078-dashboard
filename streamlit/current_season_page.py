@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from player_with_different_owners import PlayerWithDifferentOwners
 from points_by_position import PointsByPosition
+import plotly
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -30,9 +31,26 @@ def get_daily_points_plotly_fig(df, last_num_days=0):
         latest_scoring_period = df['scoringPeriodId'].max()
         df = df[(df['scoringPeriodId'] >= (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
 
+    # Create figure
     fig = go.Figure()
-    for owner, owner_df in df.groupby('owner'):
-        fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'], name=owner))
+
+    # Add league average line
+    fig.add_trace(go.Scatter(x=df[df['owner'] == "League Average"]['scoringPeriodId'],
+                             y=df[df['owner'] == "League Average"]['appliedTotal'],
+                             line=dict(color='grey', width=4, dash='dot'),
+                             mode='lines',
+                             name="League Avg"))
+
+    # Add lines for each owner
+    default_colours = plotly.colors.qualitative.Plotly
+    for i, (owner, owner_df) in enumerate(df.groupby('owner')):
+        # Already plotted league average line
+        if owner == "League Average":
+            continue
+        fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'],
+                                 y=owner_df['appliedTotal'],
+                                 line=dict(color=default_colours[i]),
+                                 name=owner))
 
     if last_num_days != 0:
         title_str = f"Total Points (Last {last_num_days} Days)"
@@ -55,11 +73,7 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     if last_num_days != 0:
         earliest_scoring_period = latest_scoring_period - last_num_days
         df = df[(df['scoringPeriodId'] >= (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
-
-    # League average
-    # Take the latest scoring period data point and average across all owners
-    num_owners = len(df['owner'].unique())
-    league_avg_pts = round(df[df['scoringPeriodId'] == latest_scoring_period]['appliedTotal'].sum() / num_owners, 2)
+    df = df[df['owner'] != "League Average"]
 
     # Highest daily change across all owners
     highest_daily_pts = 0
@@ -87,7 +101,6 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
         elif change_pts == highest_total_change_pts:
             highest_total_change_owner += f"/{owner}"
 
-    container.metric(label="League Average", value=league_avg_pts, delta=None)
     container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner)
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
 
@@ -163,7 +176,7 @@ st.markdown("#### Daily Points Stats")
 season_daily_points_df = get_daily_points_cumulative_df(season=selected_season)
 daily_pts_cols = st.columns([4, 1])
 daily_pts_plot_container = daily_pts_cols[0].container(border=True, height="stretch", width="stretch")
-daily_pts_stats_container = daily_pts_cols[1].container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
+daily_pts_stats_container = daily_pts_cols[1].container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
 daily_pts_num_days_select = daily_pts_stats_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="daily_pts_num_days")
 
 if daily_pts_num_days_select == "Full Season":

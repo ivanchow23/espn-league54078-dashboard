@@ -96,4 +96,9 @@ class DailyPoints():
         cumsum_df[[f"{col}_cumsum" for col in self._cols_of_interest]] = daily_totals_df.groupby(['owner', 'season'])[self._cols_of_interest].cumsum()
         cumsum_df = cumsum_df.drop(columns=self._cols_of_interest)
         cumsum_df = cumsum_df.rename(columns={f"{col}_cumsum": col for col in self._cols_of_interest})
+
+        # Insert league average data
+        league_avg_df = cumsum_df.groupby(['scoringPeriodId', 'season'])[self._cols_of_interest].mean().round(2).reset_index()
+        league_avg_df['owner'] = "League Average"
+        cumsum_df = pd.concat([cumsum_df, league_avg_df])
         return cumsum_df
