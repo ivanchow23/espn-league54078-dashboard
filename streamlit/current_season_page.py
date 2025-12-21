@@ -91,7 +91,7 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner)
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
 
-def get_draft_birth_country_fig(owner, series):
+def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
     wedge_colour_map={"CAN": '#cd5c5c', "USA": '#4169e1', "RUS/USSR": '#fffafa', "SWE": '#ffd700',
                       "FIN": '#000080', "CZE": '#add8e6', "SVK": '#add8e6', "Czechoslovakia": '#add8e6',
@@ -104,12 +104,21 @@ def get_draft_birth_country_fig(owner, series):
     fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=300)
     return fig
 
-def get_draft_age_fig(owner, series):
+def get_draft_age_fig(series):
     """ Helper function to return a plotly figure for draft age data. """
     # Stats
-    mean = round(series.index.to_series().mean(), 1)
-    min = int(series.index.to_series().min())
-    max = int(series.index.to_series().max())
+    try:
+        mean = round(series.index.to_series().mean(), 1)
+    except ValueError:
+        mean = 0
+    try:
+        min = int(series.index.to_series().min())
+    except ValueError:
+        min = 0
+    try:
+        max = int(series.index.to_series().max())
+    except ValueError:
+        max = 0
 
     fig = go.Figure()
     fig.add_trace(go.Bar(x=series.index, y=series.values))
@@ -117,7 +126,7 @@ def get_draft_age_fig(owner, series):
                       yaxis_title="# of Picks", margin=dict(t=50, b=10), height=300)
     return fig
 
-def get_draft_points_fig(owner, df):
+def get_draft_points_fig(df):
     """ Helper function to return a plotly figure for player points vs. draft data. """
     # Plot bar chart
     fig = go.Figure()
@@ -237,6 +246,6 @@ for owner in draft_stats_owners:
     container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
     container.markdown(f"<h4 style='text-align: left;'>{owner}</h4>", unsafe_allow_html=True)
     container_cols = container.columns([0.1, 2, 0.25, 2, 0.25, 2.5, 0.1])
-    container_cols[1].plotly_chart(get_draft_birth_country_fig(owner, draft_stats.get_draft_birth_country_data(owner, selected_season)))
-    container_cols[3].plotly_chart(get_draft_age_fig(owner, draft_stats.get_draft_player_age_data(owner, selected_season)))
-    container_cols[5].plotly_chart(get_draft_points_fig(owner, draft_player_points_stats.get_df(owner, selected_season)))
+    container_cols[1].plotly_chart(get_draft_birth_country_fig(draft_stats.get_draft_birth_country_data(owner, selected_season)))
+    container_cols[3].plotly_chart(get_draft_age_fig(draft_stats.get_draft_player_age_data(owner, selected_season)))
+    container_cols[5].plotly_chart(get_draft_points_fig(draft_player_points_stats.get_df(owner, selected_season)))
