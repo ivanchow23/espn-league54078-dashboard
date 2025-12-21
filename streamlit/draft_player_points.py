@@ -17,7 +17,7 @@ class DraftPlayerPoints():
         season_daily_roster_df = self._daily_rosters_df[self._daily_rosters_df['season'] == season]
         season_daily_roster_df = season_daily_roster_df[season_daily_roster_df['owner'] == owner]
         season_draft_df = self._draft_df[self._draft_df['Season'] == season]
-        season_draft_df = season_draft_df[self._draft_df['Owner Name'] == owner]
+        season_draft_df = season_draft_df[season_draft_df['Owner Name'] == owner]
 
         # Omit slots where player is on bench or IR, which appear to be slots 7 and 8
         season_daily_roster_df = season_daily_roster_df[(season_daily_roster_df['lineupSlotId'] != 7) & (season_daily_roster_df['lineupSlotId'] != 8)]
