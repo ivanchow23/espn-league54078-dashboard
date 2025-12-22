@@ -101,8 +101,24 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
         elif change_pts == highest_total_change_pts:
             highest_total_change_owner += f"/{owner}"
 
+    # Smallest gap between positions within the time period
+    smallest_gap_pts = float('inf')
+    rk1 = 0
+    rk2 = 0
+    day_num = 0
+    for id, scoring_period_df in df.sort_values(by='appliedTotal', ascending=False).groupby('scoringPeriodId'):
+        pts_diff_df = round(abs(scoring_period_df['appliedTotal'].diff()), 2).reset_index(drop=True)
+        min_val = pts_diff_df.min()
+        rank = pts_diff_df.idxmin() + 1
+        if min_val < smallest_gap_pts:
+            smallest_gap_pts = min_val
+            rk1 = rank - 1
+            rk2 = rank
+            day_num = id
+
     container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner)
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
+    container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})")
 
 def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
