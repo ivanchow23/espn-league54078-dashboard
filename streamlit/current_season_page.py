@@ -120,6 +120,43 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
     container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})")
 
+def get_points_by_position_fig(df, last_num_days=0):
+    """ Helper function to return a plotly figure for points by position stats.
+        Set last number of days to what the passed in dataframe corresponds to.
+        This is for title label purposes only. """
+    fig = go.Figure(data=[go.Table(header=dict(values=df.columns,
+                                               align="left",
+                                               height=35,
+                                               line_color="rgba(0, 0, 0, 0)"),
+                                   cells=dict(values=[df[col].to_list() for col in df.columns],
+                                              align="left",
+                                              height=35,
+                                              line_color="rgba(0, 0, 0, 0)"),
+                                   columnwidth=[0.6, 0.25, 0.5, 0.75, 0.75, 0.75])])
+
+    # Preserve default colours of cells: https://stackoverflow.com/a/69580966
+    # This is so the figure automatically uses the right font colour in streamlit's light/dark modes
+    f = fig.full_figure_for_development(warn=False)
+    default_colour = f.data[0].cells.font.color
+
+    # Apply font colouring
+    cell_colours = []
+    for col in df.columns:
+        cell_colours.append(["#3BBE2A" if "-" not in str(val) and "%" in str(val) else
+                             "red" if "-" in str(val) and "%" in str(val) else
+                             default_colour for val in df[col].to_list()])
+    fig.update_traces(selector=dict(type="table"),
+                      header=dict(font=dict(size=18)),
+                      cells=dict(font=dict(color=cell_colours, size=18)))
+
+    if last_num_days != 0:
+        title_str = f"Points by Position (Last {last_num_days} Days)"
+    else:
+        title_str = f"Points by Position (Full Season)"
+
+    fig.update_layout(title=title_str, height=400, margin=dict(t=50, b=10))
+    return fig
+
 def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
     wedge_colour_map={"CAN": '#cd5c5c', "USA": '#4169e1', "RUS/USSR": '#fffafa', "SWE": '#ffd700',
@@ -210,38 +247,22 @@ elif daily_pts_num_days_select == "Last 30 Days":
 
 # Points by position stats containers
 st.markdown("#### Points by Position Stats")
-points_by_position_num_cols_per_row = 4
-points_by_position_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season)
+points_by_pos_container = st.container(border=True, height="stretch", width="stretch")
+points_by_pos_num_days_select_container = points_by_pos_container.columns([1, 2.5])
+points_by_pos_num_days_select = points_by_pos_num_days_select_container[0].selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days")
 
-league_avg_pts = round(points_by_position_df['Total Points'].mean(), 2)
-league_f_avg_pts = round(points_by_position_df['Forwards'].mean(), 2)
-league_d_avg_pts = round(points_by_position_df['Defencemen'].mean(), 2)
-league_g_avg_pts = round(points_by_position_df['Goalies'].mean(), 2)
-
-# Write cells for all owners plus league average as the first cell
-num_owners = len(points_by_position_df['Owner'].unique())
-for i in range(0, num_owners + 1, points_by_position_num_cols_per_row):
-    cols = st.columns(points_by_position_num_cols_per_row)
-    for j, col in enumerate(cols):
-        container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-
-        # Write league average for first cell
-        if i + j == 0:
-            container.write("League Average")
-            container.metric("Total", value=league_avg_pts, delta=None)
-            container.metric("Forwards", value=league_f_avg_pts, delta=None)
-            container.metric("Defencemen", value=league_d_avg_pts, delta=None)
-            container.metric("Goalies", value=league_g_avg_pts, delta=None)
-        else:
-            idx = i + j - 1
-            if idx >= num_owners:
-                break
-            df = points_by_position_df.iloc[[idx]]
-            container.write(f"{idx + 1} - {df['Owner'].iloc[0]}")
-            container.metric("Total", value=df['Total Points'].iloc[0], delta=None)
-            container.metric("Forwards", value=df['Forwards'].iloc[0], delta=df['Forwards +/- Avg'].iloc[0])
-            container.metric("Defencemen", value=df['Defencemen'].iloc[0], delta=df['Defencemen +/- Avg'].iloc[0])
-            container.metric("Goalies", value=df['Goalies'].iloc[0], delta=df['Goalies +/- Avg'].iloc[0])
+if points_by_pos_num_days_select == "Full Season":
+    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season)
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+elif points_by_pos_num_days_select == "Last 7 Days":
+    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=7)
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=7))
+elif points_by_pos_num_days_select == "Last 14 Days":
+    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=14)
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=14))
+elif points_by_pos_num_days_select == "Last 30 Days":
+    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=30)
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=30))
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
