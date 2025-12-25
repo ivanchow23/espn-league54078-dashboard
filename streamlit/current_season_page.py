@@ -167,9 +167,9 @@ def get_daily_points_by_positions_figs(df):
 
     fig.update_yaxes(title_text="Fantasy Points", row=2, col=1)
     fig.update_xaxes(title_text="Day Number", row=3, col=1)
-    fig.update_layout(margin=dict(t=40),
+    fig.update_layout(margin=dict(t=30),
                       legend=dict(orientation='h', y=-0.1),
-                      height=1000)
+                      height=900)
 
     return fig
 
@@ -181,6 +181,29 @@ def points_by_position_colour_map(val):
         else:
             return 'color: green'
     return ''
+
+def update_top_position_stats_metrics(col, d_df, f_df, g_df):
+    """ Helper function to update top position stats metrics. """
+    pos_container = col.container(border=False, height="stretch", width="stretch", horizontal_alignment="center")
+    for i in range(3):
+        if i == 0:
+            pos_container.write("Top Defencemen")
+            pos_cols = pos_container.columns(3)
+            for j in range(3):
+                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
+                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{d_df.loc[j]['Player ID']}.png", caption=f"{d_df.loc[j]['Player Name']} ({d_df.loc[j]['Points']})", width=125)
+        elif i == 1:
+            pos_container.write("Top Forwards")
+            pos_cols = pos_container.columns(3)
+            for j in range(3):
+                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
+                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{f_df.loc[j]['Player ID']}.png", caption=f"{f_df.loc[j]['Player Name']} ({f_df.loc[j]['Points']})", width=125)
+        elif i == 2:
+            pos_container.write("Top Goalies")
+            pos_cols = pos_container.columns(3)
+            for j in range(3):
+                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
+                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{g_df.loc[j]['Player ID']}.png", caption=f"{g_df.loc[j]['Player Name']} ({g_df.loc[j]['Points']})", width=125)
 
 def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
@@ -281,15 +304,27 @@ points_by_pos_daily_plots_container = points_by_pos_container.container(border=F
 if points_by_pos_num_days_select == "Full Season":
     points_by_pos_df = points_by_pos.get_df(season=selected_season)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season)
+    top_defencemen_df = points_by_pos.get_top_defencemen_df(season=selected_season)
+    top_forwards_df = points_by_pos.get_top_forwards_df(season=selected_season)
+    top_goalies_df = points_by_pos.get_top_goalies_df(season=selected_season)
 elif points_by_pos_num_days_select == "Last 7 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=7)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=7)
+    top_defencemen_df = points_by_pos.get_top_defencemen_df(season=selected_season, last_num_days=7)
+    top_forwards_df = points_by_pos.get_top_forwards_df(season=selected_season, last_num_days=7)
+    top_goalies_df = points_by_pos.get_top_goalies_df(season=selected_season, last_num_days=7)
 elif points_by_pos_num_days_select == "Last 14 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=14)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=14)
+    top_defencemen_df = points_by_pos.get_top_defencemen_df(season=selected_season, last_num_days=14)
+    top_forwards_df = points_by_pos.get_top_forwards_df(season=selected_season, last_num_days=14)
+    top_goalies_df = points_by_pos.get_top_goalies_df(season=selected_season, last_num_days=14)
 elif points_by_pos_num_days_select == "Last 30 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=30)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=30)
+    top_defencemen_df = points_by_pos.get_top_defencemen_df(season=selected_season, last_num_days=30)
+    top_forwards_df = points_by_pos.get_top_forwards_df(season=selected_season, last_num_days=30)
+    top_goalies_df = points_by_pos.get_top_goalies_df(season=selected_season, last_num_days=30)
 
 # Cast to string type to somehow make cols appear left-aligned
 # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
@@ -297,6 +332,7 @@ df = points_by_pos_df.astype(str).style.applymap(points_by_position_colour_map)
 points_by_pos_container.dataframe(df, hide_index=True, column_config={'Owner': st.column_config.Column(pinned=True)})
 points_by_pos_plots_cols = points_by_pos_container.columns([1.25, 1])
 points_by_pos_plots_cols[0].plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+update_top_position_stats_metrics(points_by_pos_plots_cols[1], top_defencemen_df, top_forwards_df, top_goalies_df)
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")

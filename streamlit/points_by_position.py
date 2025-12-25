@@ -96,6 +96,47 @@ class PointsByPosition():
 
         return cumsum_df
 
+    def get_top_forwards_df(self, season, last_num_days=0):
+        """ Returns dataframe of top forwards in the last number of days.
+            Set last_num_days to 0 for entire season. """
+        return self._get_top_players_df(season, "F", last_num_days)
+
+    def get_top_defencemen_df(self, season, last_num_days=0):
+        """ Returns dataframe of top defencemen in the last number of days.
+            Set last_num_days to 0 for entire season. """
+        return self._get_top_players_df(season, "D", last_num_days)
+
+    def get_top_goalies_df(self, season, last_num_days=0):
+        """ Returns dataframe of top goalies in the last number of days.
+            Set last_num_days to 0 for entire season. """
+        return self._get_top_players_df(season, "G", last_num_days)
+
+    def _get_top_players_df(self, season, position, last_num_days=0):
+        """ Returns dataframe of top players of given position in the last number of days.
+            Set last_num_days to 0 for entire season. """
+        # Filter for season
+        df = self._daily_rosters_df[self._daily_rosters_df['season'] == season]
+
+        # Filter for day number
+        if last_num_days != 0:
+            latest_scoring_period = df['scoringPeriodId'].max()
+            # Note: Exclusive of the first day in range because we only want to include
+            # daily data for after the day is finished
+            df = df[(df['scoringPeriodId'] > (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
+
+        # Filter for position
+        df = df[df['position'] == position]
+
+        players_df = pd.DataFrame()
+        for player, player_df in df.groupby('fullName'):
+            stats_dict = {'Player Name': player,
+                          'Player ID': player_df['id'].iloc[0],
+                          'Points': round(player_df['appliedTotal'].sum(), 2)}
+            players_df = pd.concat([players_df, pd.DataFrame([stats_dict])], ignore_index=True)
+
+        players_df = players_df.sort_values(by='Points', ascending=False).reset_index(drop=True)
+        return players_df
+
     def _get_totals_df(self, df):
         """ Get dataframe of total sums derived from input dataframe. """
         # Generate daily totals of each scoring period of each position of each owner
