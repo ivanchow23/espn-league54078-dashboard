@@ -63,6 +63,39 @@ class PointsByPosition():
         stats_df = pd.concat([pd.DataFrame([league_avg_stat_dict]), stats_df], ignore_index=True)
         return stats_df
 
+    def get_cumsum_df(self, season, last_num_days=0):
+        """ Returns dataframe of cumulative sums (used for daily stats) for position stats
+            for a given season in the last number of days. Set last_num_days = 0 for entire
+            season. """
+        """ Get dataframe of cumulative sums derived from original raw dataframe. """
+        # Filter for season
+        season_df = self._daily_rosters_df[self._daily_rosters_df['season'] == season]
+
+        # Filter for day number
+        if last_num_days != 0:
+            latest_scoring_period = season_df['scoringPeriodId'].max()
+            # Note: Exclusive of the first day in range because we only want to include
+            # daily data for after the day is finished
+            season_df = season_df[(season_df['scoringPeriodId'] > (latest_scoring_period - last_num_days)) & (season_df['scoringPeriodId'] <= latest_scoring_period)]
+
+        # Generate daily totals of each scoring period of each position of each owner
+        # It seems like 3 = forwards, 4 = defence, 5 = goalies
+        daily_totals_df = season_df.groupby(['scoringPeriodId', 'owner', 'season', 'position'])[self._cols_of_interest].sum().reset_index()
+
+        # Generate cumulative totals of each position of each scoring period of each owner of each season
+        # Cumsum function does not keep original columns, so do some column manipulation to get original df columns but with cumsum values
+        cumsum_df = daily_totals_df.copy(deep=True)
+        cumsum_df[[f"{col}_cumsum" for col in self._cols_of_interest]] = daily_totals_df.groupby(['owner', 'season', 'position'])[self._cols_of_interest].cumsum()
+        cumsum_df = cumsum_df.drop(columns=self._cols_of_interest)
+        cumsum_df = cumsum_df.rename(columns={f"{col}_cumsum": col for col in self._cols_of_interest})
+
+        # Insert league average data
+        league_avg_df = cumsum_df.groupby(['scoringPeriodId', 'season'])[self._cols_of_interest].mean().round(2).reset_index()
+        league_avg_df['owner'] = "League Average"
+        cumsum_df = pd.concat([cumsum_df, league_avg_df])
+
+        return cumsum_df
+
     def _get_totals_df(self, df):
         """ Get dataframe of total sums derived from input dataframe. """
         # Generate daily totals of each scoring period of each position of each owner

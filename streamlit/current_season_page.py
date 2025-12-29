@@ -7,6 +7,7 @@ from player_with_different_owners import PlayerWithDifferentOwners
 from points_by_position import PointsByPosition
 import plotly
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import streamlit as st
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -120,10 +121,66 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
     container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})")
 
-def get_points_by_position_fig(df, last_num_days=0):
-    """ Helper function to return a plotly figure for points by position stats.
-        Set last number of days to what the passed in dataframe corresponds to.
-        This is for title label purposes only. """
+def get_daily_points_by_positions_figs(df):
+    """ Helper function to return a plotly figure for daily points by positions plots. """
+    df_f = df[df['position'] == "F"]
+    df_d = df[df['position'] == "D"]
+    df_g = df[df['position'] == "G"]
+
+    # Generate multiple subplots in a figure
+    default_colours = plotly.colors.qualitative.Plotly
+    fig = make_subplots(rows=1, cols=3, horizontal_spacing=0.03,
+                        subplot_titles=["Forwards", "Defencemen", "Goalies"],
+                        x_title="Day Number")
+
+    # Forwards points by position plots including league average plot
+    league_avg_df_f = df_f.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
+    fig.add_trace(go.Scatter(x=league_avg_df_f.index, y=league_avg_df_f.values,
+                            line=dict(color='grey', width=4, dash='dot'),
+                            mode='lines', name="League Avg",
+                            legendgroup="League Average", showlegend=True),
+                            row=1, col=1)
+    for i, (owner, owner_df) in enumerate(df_f.groupby('owner')):
+        fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
+                                 name=owner, line=dict(color=default_colours[i]),
+                                 legendgroup=owner, showlegend=True),
+                                 row=1, col=1)
+
+    # Defencemen points by position plots including league average plot
+    league_avg_df_d = df_d.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
+    fig.add_trace(go.Scatter(x=league_avg_df_d.index, y=league_avg_df_d.values,
+                            line=dict(color='grey', width=4, dash='dot'),
+                            mode='lines', name="League Avg",
+                            legendgroup="League Average", showlegend=False),
+                            row=1, col=2)
+    for i, (owner, owner_df) in enumerate(df_d.groupby('owner')):
+        fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
+                                 name=owner, line=dict(color=default_colours[i]),
+                                 legendgroup=owner, showlegend=False),
+                                 row=1, col=2)
+
+    # Goalies points by position plots including league average plot
+    league_avg_df_g = df_g.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
+    fig.add_trace(go.Scatter(x=league_avg_df_g.index, y=league_avg_df_g.values,
+                            line=dict(color='grey', width=4, dash='dot'),
+                            mode='lines', name="League Avg",
+                            legendgroup="League Average", showlegend=False),
+                            row=1, col=3)
+    for i, (owner, owner_df) in enumerate(df_g.groupby('owner')):
+        fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
+                                 name=owner, line=dict(color=default_colours[i]),
+                                 legendgroup=owner, showlegend=False),
+                                 row=1, col=3)
+
+    fig.update_layout(yaxis_title="Fantasy Points",
+                      margin=dict(t=20, b=40),
+                      legend=dict(orientation='h', y=-0.2))
+
+    return fig
+
+def get_points_by_position_fig(df):
+    """ Helper function to return a plotly figure for points by position stats."""
+
     fig = go.Figure(data=[go.Table(header=dict(values=df.columns,
                                                align="left",
                                                height=35,
@@ -149,12 +206,7 @@ def get_points_by_position_fig(df, last_num_days=0):
                       header=dict(font=dict(size=18)),
                       cells=dict(font=dict(color=cell_colours, size=18)))
 
-    if last_num_days != 0:
-        title_str = f"Points by Position (Last {last_num_days} Days)"
-    else:
-        title_str = f"Points by Position (Full Season)"
-
-    fig.update_layout(title=title_str, height=400, margin=dict(t=50, b=10))
+    fig.update_layout(height=375, margin=dict(t=30, b=10))
     return fig
 
 def get_draft_birth_country_fig(series):
@@ -247,22 +299,36 @@ elif daily_pts_num_days_select == "Last 30 Days":
 
 # Points by position stats containers
 st.markdown("#### Points by Position Stats")
+points_by_pos = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 points_by_pos_container = st.container(border=True, height="stretch", width="stretch")
 points_by_pos_num_days_select_container = points_by_pos_container.columns([1, 2.5])
 points_by_pos_num_days_select = points_by_pos_num_days_select_container[0].selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days")
+points_by_pos_daily_plots_container = points_by_pos_container.container(border=False, height="stretch", width="stretch")
+points_by_pos_daily_plots_cols = points_by_pos_daily_plots_container.columns(3)
 
 if points_by_pos_num_days_select == "Full Season":
-    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season)
+    points_by_pos_df = points_by_pos.get_df(season=selected_season)
+    points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season)
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
     points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+
 elif points_by_pos_num_days_select == "Last 7 Days":
-    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=7)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=7))
+    points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=7)
+    points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=7)
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+
 elif points_by_pos_num_days_select == "Last 14 Days":
-    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=14)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=14))
+    points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=14)
+    points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=14)
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+
 elif points_by_pos_num_days_select == "Last 30 Days":
-    points_by_pos_df = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_df(season=selected_season, last_num_days=30)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df, last_num_days=30))
+    points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=30)
+    points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=30)
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
