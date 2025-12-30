@@ -189,7 +189,7 @@ def get_points_by_position_fig(df):
                                               align="left",
                                               height=35,
                                               line_color="rgba(0, 0, 0, 0)"),
-                                   columnwidth=[0.6, 0.25, 0.5, 0.75, 0.75, 0.75])])
+                                   columnwidth=[0.75, 0.25, 0.5, 0.75, 0.75, 0.75])])
 
     # Preserve default colours of cells: https://stackoverflow.com/a/69580966
     # This is so the figure automatically uses the right font colour in streamlit's light/dark modes
