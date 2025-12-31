@@ -30,7 +30,7 @@ def get_daily_points_plotly_fig(df, last_num_days=0):
     # Filter
     if last_num_days != 0:
         latest_scoring_period = df['scoringPeriodId'].max()
-        df = df[(df['scoringPeriodId'] >= (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
+        df = df[(df['scoringPeriodId'] > (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
 
     # Create figure
     fig = go.Figure()
@@ -72,8 +72,8 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     latest_scoring_period = df['scoringPeriodId'].max()
     earliest_scoring_period = 1
     if last_num_days != 0:
-        earliest_scoring_period = latest_scoring_period - last_num_days
-        df = df[(df['scoringPeriodId'] >= (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
+        df = df[(df['scoringPeriodId'] > (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
+        earliest_scoring_period = latest_scoring_period - last_num_days + 1
     df = df[df['owner'] != "League Average"]
 
     # Highest daily change across all owners
