@@ -53,15 +53,9 @@ def get_daily_points_plotly_fig(df, last_num_days=0):
                                  line=dict(color=default_colours[i]),
                                  name=owner))
 
-    if last_num_days != 0:
-        title_str = f"Total Points (Last {last_num_days} Days)"
-    else:
-        title_str = f"Total Points (Full Season)"
-
-    fig.update_layout(title=title_str,
-                      xaxis_title="Day Number",
+    fig.update_layout(xaxis_title="Day Number",
                       yaxis_title=f"Fantasy Points",
-                      margin=dict(t=50, b=80),
+                      margin=dict(t=0, b=80),
                       legend=dict(orientation='h', y=-0.2))
     return fig
 
@@ -117,7 +111,7 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
             rk2 = rank
             day_num = id
 
-    container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner)
+    container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner, )
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
     container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})")
 
@@ -280,10 +274,10 @@ else:
 st.markdown("#### Daily Points Stats")
 season_daily_points_df = get_daily_points_cumulative_df(season=selected_season)
 daily_pts_container = st.container(border=True, height="stretch", width="stretch")
-daily_pts_cols = daily_pts_container.columns([4, 1])
+daily_pts_num_days_select = daily_pts_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="daily_pts_num_days", width=250)
+daily_pts_cols = daily_pts_container.columns([4, 0.1, 0.75])
 daily_pts_plot_container = daily_pts_cols[0].container(border=False, height="stretch", width="stretch")
-daily_pts_stats_container = daily_pts_cols[1].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-daily_pts_num_days_select = daily_pts_stats_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="daily_pts_num_days")
+daily_pts_stats_container = daily_pts_cols[2].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
 
 if daily_pts_num_days_select == "Full Season":
     daily_pts_plot_container.plotly_chart(get_daily_points_plotly_fig(season_daily_points_df))
