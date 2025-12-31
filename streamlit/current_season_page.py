@@ -296,8 +296,7 @@ elif daily_pts_num_days_select == "Last 30 Days":
 st.markdown("#### Points by Position Stats")
 points_by_pos = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 points_by_pos_container = st.container(border=True, height="stretch", width="stretch")
-points_by_pos_num_days_select_container = points_by_pos_container.columns([1, 2.5])
-points_by_pos_num_days_select = points_by_pos_num_days_select_container[0].selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days")
+points_by_pos_num_days_select = points_by_pos_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days", width=250)
 points_by_pos_daily_plots_container = points_by_pos_container.container(border=False, height="stretch", width="stretch")
 points_by_pos_daily_plots_cols = points_by_pos_daily_plots_container.columns(3)
 
