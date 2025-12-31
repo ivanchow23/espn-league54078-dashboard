@@ -275,7 +275,7 @@ st.markdown("#### Daily Points Stats")
 season_daily_points_df = get_daily_points_cumulative_df(season=selected_season)
 daily_pts_container = st.container(border=True, height="stretch", width="stretch")
 daily_pts_num_days_select = daily_pts_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="daily_pts_num_days", width=250)
-daily_pts_cols = daily_pts_container.columns([4, 0.1, 0.75])
+daily_pts_cols = daily_pts_container.columns([4, 0.1, 1])
 daily_pts_plot_container = daily_pts_cols[0].container(border=False, height="stretch", width="stretch")
 daily_pts_stats_container = daily_pts_cols[2].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
 
