@@ -200,7 +200,7 @@ def get_points_by_position_fig(df):
                       header=dict(font=dict(size=18)),
                       cells=dict(font=dict(color=cell_colours, size=18)))
 
-    fig.update_layout(height=375, margin=dict(t=30, b=10))
+    fig.update_layout(margin=dict(t=10, b=10), height=350)
     return fig
 
 def get_players_with_diff_owners_table_fig(df):
@@ -322,26 +322,26 @@ points_by_pos_daily_plots_cols = points_by_pos_daily_plots_container.columns(3)
 if points_by_pos_num_days_select == "Full Season":
     points_by_pos_df = points_by_pos.get_df(season=selected_season)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season)
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
     points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 elif points_by_pos_num_days_select == "Last 7 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=7)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=7)
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
     points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 elif points_by_pos_num_days_select == "Last 14 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=14)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=14)
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
     points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 elif points_by_pos_num_days_select == "Last 30 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=30)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=30)
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
     points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
+    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
