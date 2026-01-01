@@ -203,6 +203,25 @@ def get_points_by_position_fig(df):
     fig.update_layout(height=375, margin=dict(t=30, b=10))
     return fig
 
+def get_players_with_diff_owners_table_fig(df):
+    """ Helper fucntion to return a plotly figure for table of
+        players with different owners. """
+    fig = go.Figure(data=[go.Table(header=dict(values=df.columns,
+                                               align="left",
+                                               line_color="rgba(0, 0, 0, 0)"),
+                                   cells=dict(values=[df[col].to_list() for col in df.columns],
+                                              align="left",
+                                              height=25,
+                                              line_color="rgba(0, 0, 0, 0)"),
+                                   columnwidth=[0.975, 0.25, 0.375, 0.3])])
+
+    approx_fig_height = 35 * len(df)
+    fig.update_traces(selector=dict(type="table"),
+                      header=dict(font=dict(size=14)),
+                      cells=dict(font=dict(size=14)))
+    fig.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=approx_fig_height)
+    return fig
+
 def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
     wedge_colour_map={"CAN": '#cd5c5c', "USA": '#4169e1', "RUS/USSR": '#fffafa', "SWE": '#ffd700',
@@ -327,7 +346,7 @@ elif points_by_pos_num_days_select == "Last 30 Days":
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
 st.markdown("##### _\"Roope Stats\"_")
-players_diff_owners_num_cols_per_row = 3
+players_diff_owners_num_cols_per_row = 4
 players_diff_owners_dicts = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH).get_dicts(selected_season)
 
 for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_per_row):
@@ -340,12 +359,7 @@ for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_p
         player_dict = players_diff_owners_dicts[idx]
         player_container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
         player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=200)
-        df = pd.DataFrame(player_dict['Owners'])
-
-        # Cast to string type to somehow make cols appear left-aligned
-        # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
-        df = df.astype(str)
-        player_container.dataframe(df, hide_index=True)
+        player_container.plotly_chart(get_players_with_diff_owners_table_fig(pd.DataFrame(player_dict['Owners'])))
 
 # Draft stats container
 st.markdown("#### Draft Stats")
