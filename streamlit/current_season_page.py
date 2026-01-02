@@ -187,23 +187,17 @@ def update_top_position_stats_metrics(col, d_df, f_df, g_df):
     pos_container = col.container(border=False, height="stretch", width="stretch", horizontal_alignment="center")
     for i in range(3):
         if i == 0:
-            pos_container.write("Top Defencemen")
-            pos_cols = pos_container.columns(3)
-            for j in range(3):
-                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{d_df.loc[j]['Player ID']}.png", caption=f"{d_df.loc[j]['Player Name']} ({d_df.loc[j]['Points']})", width=125)
+            pos_container.markdown(f"<p style='text-align: center;'>Top Defencemen (On a Team)</p>", unsafe_allow_html=True)
+            pos_cols = pos_container.columns([0.2, 1, 0.2])
+            pos_cols[1].dataframe(d_df[['Player Name', 'Points']].loc[0:4].astype(str), hide_index=True)
         elif i == 1:
-            pos_container.write("Top Forwards")
-            pos_cols = pos_container.columns(3)
-            for j in range(3):
-                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{f_df.loc[j]['Player ID']}.png", caption=f"{f_df.loc[j]['Player Name']} ({f_df.loc[j]['Points']})", width=125)
+            pos_container.markdown(f"<p style='text-align: center;'>Top Forwards (On a Team)</p>", unsafe_allow_html=True)
+            pos_cols = pos_container.columns([0.2, 1, 0.2])
+            pos_cols[1].dataframe(f_df[['Player Name', 'Points']].loc[0:4].astype(str), hide_index=True)
         elif i == 2:
-            pos_container.write("Top Goalies")
-            pos_cols = pos_container.columns(3)
-            for j in range(3):
-                player_container = pos_cols[j].container(border=False, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-                player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{g_df.loc[j]['Player ID']}.png", caption=f"{g_df.loc[j]['Player Name']} ({g_df.loc[j]['Points']})", width=125)
+            pos_container.markdown(f"<p style='text-align: center;'>Top Goalies (On a Team)</p>", unsafe_allow_html=True)
+            pos_cols = pos_container.columns([0.2, 1, 0.2])
+            pos_cols[1].dataframe(g_df[['Player Name', 'Points']].loc[0:4].astype(str), hide_index=True)
 
 def get_draft_birth_country_fig(series):
     """ Helper function to return a plotly figure for draft birth country data. """
