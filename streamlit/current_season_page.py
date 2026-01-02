@@ -172,36 +172,14 @@ def get_daily_points_by_positions_figs(df):
 
     return fig
 
-def get_points_by_position_fig(df):
-    """ Helper function to return a plotly figure for points by position stats."""
-
-    fig = go.Figure(data=[go.Table(header=dict(values=df.columns,
-                                               align="left",
-                                               height=35,
-                                               line_color="rgba(0, 0, 0, 0)"),
-                                   cells=dict(values=[df[col].to_list() for col in df.columns],
-                                              align="left",
-                                              height=35,
-                                              line_color="rgba(0, 0, 0, 0)"),
-                                   columnwidth=[0.75, 0.25, 0.5, 0.75, 0.75, 0.75])])
-
-    # Preserve default colours of cells: https://stackoverflow.com/a/69580966
-    # This is so the figure automatically uses the right font colour in streamlit's light/dark modes
-    f = fig.full_figure_for_development(warn=False)
-    default_colour = f.data[0].cells.font.color
-
-    # Apply font colouring
-    cell_colours = []
-    for col in df.columns:
-        cell_colours.append(["#3BBE2A" if "-" not in str(val) and "%" in str(val) else
-                             "red" if "-" in str(val) and "%" in str(val) else
-                             default_colour for val in df[col].to_list()])
-    fig.update_traces(selector=dict(type="table"),
-                      header=dict(font=dict(size=18)),
-                      cells=dict(font=dict(color=cell_colours, size=18)))
-
-    fig.update_layout(margin=dict(t=10, b=10), height=350)
-    return fig
+def points_by_position_colour_map(val):
+    """ Function to be applied to dataframe for points per position stats. """
+    if "(" in val and ")" in val:
+        if "-" in val:
+            return 'color: red'
+        else:
+            return 'color: green'
+    return ''
 
 def get_players_with_diff_owners_table_fig(df):
     """ Helper fucntion to return a plotly figure for table of
@@ -322,26 +300,21 @@ points_by_pos_daily_plots_cols = points_by_pos_daily_plots_container.columns(3)
 if points_by_pos_num_days_select == "Full Season":
     points_by_pos_df = points_by_pos.get_df(season=selected_season)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
-
 elif points_by_pos_num_days_select == "Last 7 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=7)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=7)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
-
 elif points_by_pos_num_days_select == "Last 14 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=14)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=14)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
-
 elif points_by_pos_num_days_select == "Last 30 Days":
     points_by_pos_df = points_by_pos.get_df(season=selected_season, last_num_days=30)
     points_by_pos_cumsum_df = points_by_pos.get_cumsum_df(season=selected_season, last_num_days=30)
-    points_by_pos_container.plotly_chart(get_points_by_position_fig(points_by_pos_df))
-    points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+
+# Cast to string type to somehow make cols appear left-aligned
+# https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
+df = points_by_pos_df.astype(str).style.applymap(points_by_position_colour_map)
+points_by_pos_container.dataframe(df, hide_index=True, column_config={'Owner': st.column_config.Column(pinned=True)})
+points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
