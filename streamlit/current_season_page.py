@@ -349,7 +349,7 @@ for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_p
 
         player_dict = players_diff_owners_dicts[idx]
         player_container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-        player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=200)
+        player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=150)
 
         # Cast to string type to somehow make cols appear left-aligned
         # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
