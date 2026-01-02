@@ -252,13 +252,34 @@ st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Dashboard</h2>",
 daily_points_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 
 # Select season to show
-st.markdown("#### Season to Display")
 seasons = sorted(daily_points_df['season'].unique(), reverse=True)
 seasons_select_options = sorted(daily_points_df['season'].astype(str).unique(), reverse=True)
 seasons_select_options = [season[:4] + "-" + season[4:] for season in seasons_select_options]
 seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
+season_select_container = st.container()
+season_select_container.markdown("#### Season to Display")
+season_select_cols = season_select_container.columns([1, 3])
 
-season_select_cols = st.columns([1, 3])
+# Custom CSS to make season selectbox a sticky header
+# Reference: https://discuss.streamlit.io/t/is-it-possible-to-create-a-sticky-header/33145 and Copilot
+season_select_container.write("""<div class='fixed-header'/>""", unsafe_allow_html=True)
+season_select_container.markdown(
+    """
+<style>
+    div[data-testid="stVerticalBlock"] div:has(div.fixed-header) {
+        position: sticky;
+        top: 3rem;
+        margin-bottom: -0.75rem;
+        background: transparent;                     /* show the page background */
+        color: inherit;                              /* use theme text color */
+        backdrop-filter: saturate(180%) blur(100px); /* optional visual polish */
+        z-index: 999;
+    }
+</style>
+    """,
+    unsafe_allow_html=True
+)
+
 selected_season_str = season_select_cols[0].selectbox(label="Show Season", options=seasons_select_options, key=seasons, label_visibility='collapsed')
 selected_season_str = selected_season_str.replace("-", "")
 if "Current" in selected_season_str:
