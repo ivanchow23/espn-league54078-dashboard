@@ -65,6 +65,12 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     # Filter
     latest_scoring_period = df['scoringPeriodId'].max()
     earliest_scoring_period = 1
+
+    # Handle case if there are less scoring periods than last number of days
+    # For example: Just a few games played early in the season
+    if latest_scoring_period < last_num_days:
+        last_num_days = latest_scoring_period
+
     if last_num_days != 0:
         df = df[(df['scoringPeriodId'] > (latest_scoring_period - last_num_days)) & (df['scoringPeriodId'] <= latest_scoring_period)]
         earliest_scoring_period = latest_scoring_period - last_num_days + 1
