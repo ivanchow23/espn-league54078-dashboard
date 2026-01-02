@@ -117,41 +117,40 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
 
 def get_daily_points_by_positions_figs(df):
     """ Helper function to return a plotly figure for daily points by positions plots. """
-    df_f = df[df['position'] == "F"]
     df_d = df[df['position'] == "D"]
+    df_f = df[df['position'] == "F"]
     df_g = df[df['position'] == "G"]
 
     # Generate multiple subplots in a figure
     default_colours = plotly.colors.qualitative.Plotly
-    fig = make_subplots(rows=1, cols=3, horizontal_spacing=0.03,
-                        subplot_titles=["Forwards", "Defencemen", "Goalies"],
-                        x_title="Day Number")
+    fig = make_subplots(rows=3, cols=1, vertical_spacing=0.10,
+                        subplot_titles=["Defencemen", "Forwards", "Goalies"])
 
     # Forwards points by position plots including league average plot
-    league_avg_df_f = df_f.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
-    fig.add_trace(go.Scatter(x=league_avg_df_f.index, y=league_avg_df_f.values,
+    league_avg_df_d = df_d.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
+    fig.add_trace(go.Scatter(x=league_avg_df_d.index, y=league_avg_df_d.values,
                             line=dict(color='grey', width=4, dash='dot'),
                             mode='lines', name="League Avg",
                             legendgroup="League Average", showlegend=True),
                             row=1, col=1)
-    for i, (owner, owner_df) in enumerate(df_f.groupby('owner')):
+    for i, (owner, owner_df) in enumerate(df_d.groupby('owner')):
         fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
                                  name=owner, line=dict(color=default_colours[i]),
                                  legendgroup=owner, showlegend=True),
                                  row=1, col=1)
 
     # Defencemen points by position plots including league average plot
-    league_avg_df_d = df_d.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
-    fig.add_trace(go.Scatter(x=league_avg_df_d.index, y=league_avg_df_d.values,
+    league_avg_df_f = df_f.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
+    fig.add_trace(go.Scatter(x=league_avg_df_f.index, y=league_avg_df_f.values,
                             line=dict(color='grey', width=4, dash='dot'),
                             mode='lines', name="League Avg",
                             legendgroup="League Average", showlegend=False),
-                            row=1, col=2)
-    for i, (owner, owner_df) in enumerate(df_d.groupby('owner')):
+                            row=2, col=1)
+    for i, (owner, owner_df) in enumerate(df_f.groupby('owner')):
         fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
                                  name=owner, line=dict(color=default_colours[i]),
                                  legendgroup=owner, showlegend=False),
-                                 row=1, col=2)
+                                 row=2, col=1)
 
     # Goalies points by position plots including league average plot
     league_avg_df_g = df_g.groupby('scoringPeriodId')['appliedTotal'].mean().round(2)
@@ -159,16 +158,18 @@ def get_daily_points_by_positions_figs(df):
                             line=dict(color='grey', width=4, dash='dot'),
                             mode='lines', name="League Avg",
                             legendgroup="League Average", showlegend=False),
-                            row=1, col=3)
+                            row=3, col=1)
     for i, (owner, owner_df) in enumerate(df_g.groupby('owner')):
         fig.add_trace(go.Scatter(x=owner_df['scoringPeriodId'], y=owner_df['appliedTotal'],
                                  name=owner, line=dict(color=default_colours[i]),
                                  legendgroup=owner, showlegend=False),
-                                 row=1, col=3)
+                                 row=3, col=1)
 
-    fig.update_layout(yaxis_title="Fantasy Points",
-                      margin=dict(t=20, b=40),
-                      legend=dict(orientation='h', y=-0.2))
+    fig.update_yaxes(title_text="Fantasy Points", row=2, col=1)
+    fig.update_xaxes(title_text="Day Number", row=3, col=1)
+    fig.update_layout(margin=dict(t=40),
+                      legend=dict(orientation='h', y=-0.1),
+                      height=1000)
 
     return fig
 
@@ -276,7 +277,6 @@ points_by_pos = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 points_by_pos_container = st.container(border=True, height="stretch", width="stretch")
 points_by_pos_num_days_select = points_by_pos_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days", width=250)
 points_by_pos_daily_plots_container = points_by_pos_container.container(border=False, height="stretch", width="stretch")
-points_by_pos_daily_plots_cols = points_by_pos_daily_plots_container.columns(3)
 
 if points_by_pos_num_days_select == "Full Season":
     points_by_pos_df = points_by_pos.get_df(season=selected_season)
@@ -295,7 +295,8 @@ elif points_by_pos_num_days_select == "Last 30 Days":
 # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
 df = points_by_pos_df.astype(str).style.applymap(points_by_position_colour_map)
 points_by_pos_container.dataframe(df, hide_index=True, column_config={'Owner': st.column_config.Column(pinned=True)})
-points_by_pos_container.plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
+points_by_pos_plots_cols = points_by_pos_container.columns([1.25, 1])
+points_by_pos_plots_cols[0].plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
 
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
