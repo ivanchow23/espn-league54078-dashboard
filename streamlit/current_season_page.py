@@ -349,7 +349,7 @@ elif points_by_pos_num_days_select == "Last 30 Days":
 
 # Cast to string type to somehow make cols appear left-aligned
 # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
-df = points_by_pos_df.astype(str).style.applymap(points_by_position_colour_map)
+df = points_by_pos_df.astype(str).style.map(points_by_position_colour_map)
 points_by_pos_container.dataframe(df, hide_index=True, column_config={'Owner': st.column_config.Column(pinned=True)})
 points_by_pos_plots_cols = points_by_pos_container.columns([1.25, 1])
 points_by_pos_plots_cols[0].plotly_chart(get_daily_points_by_positions_figs(points_by_pos_cumsum_df))
