@@ -119,7 +119,7 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
 
     container.metric(label="Highest Daily Change", value=highest_daily_pts, delta=highest_daily_pts_owner, )
     container.metric(label=f"Highest Total Change", value=highest_total_change_pts, delta=highest_total_change_owner)
-    container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})")
+    container.metric(label="Smallest Gap", value=smallest_gap_pts, delta=f"Ranks {rk1}/{rk2} (Day {day_num})", delta_arrow="off")
 
 def get_daily_points_by_positions_figs(df):
     """ Helper function to return a plotly figure for daily points by positions plots. """
