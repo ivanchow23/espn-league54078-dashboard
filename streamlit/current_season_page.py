@@ -246,7 +246,7 @@ def get_draft_points_fig(df):
     fig = go.Figure()
     fig.add_trace(go.Bar(x=df['Round Number'], y=df['appliedTotal'], hovertext=df['Player'], marker_color="#3ECA56"))
     fig.update_layout(title=f"Points Earned for Drafted Owner<br><i>Hey, who's this guy?<i>",
-                      xaxis_title="Draft Number", yaxis_title="Points", margin=dict(t=50, b=10), height=300)
+                      xaxis_title="Draft Number", yaxis_title="Fantasy Points", margin=dict(t=50, b=10), height=300)
     return fig
 
 # -------------------------------------- Page content start ---------------------------------------
