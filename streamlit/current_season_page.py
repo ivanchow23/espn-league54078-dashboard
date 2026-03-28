@@ -1,13 +1,13 @@
-from daily_points import DailyPoints
-from draft_player_points import DraftPlayerPoints
-from draft_stats import DraftStats
 import os
 import pandas as pd
-from player_with_different_owners import PlayerWithDifferentOwners
-from points_by_position import PointsByPosition
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from stats.daily_points import DailyPoints
+from stats.draft_player_points import DraftPlayerPoints
+from stats.draft_stats import DraftStats
+from stats.player_with_different_owners import PlayerWithDifferentOwners
+from stats.points_by_position import PointsByPosition
 import streamlit as st
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))

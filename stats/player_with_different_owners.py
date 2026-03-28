@@ -21,6 +21,82 @@ class PlayerWithDifferentOwners():
         """ Returns list of valid seasons contained in the data. """
         return self._daily_rosters_df['season'].unique()
 
+    def get_dicts(self, season):
+        """ Get list of dictionaries of each player with different owners
+            for the given season.
+
+            Data structure has the form like:
+            [{'Player Name': "Player A Name", 'Player ID': idA, 'Owners': [{'Owner': "Owner A", 'GP': ... stats},
+                                                                            'Owner': "Owner B", 'GP': ... stats}]},
+             {'Player Name': "Player B Name", 'Player ID': idB, 'Owners': [{'Owner': "Owner C", 'GP': ... stats},
+                                                                            'Owner': "Owner D", 'GP': ... stats}]}
+             ... }]
+        """
+        # Filter for season
+        season_df = self._sum_df[self._sum_df['season'] == season]
+        season_bir_df = self._bir_sum_df[self._bir_sum_df['season'] == season]
+        all_players_info_df = self._all_players_info_df[self._all_players_info_df['Season'] == season]
+
+        # Find each player that had multiple owners
+        player_data = []
+        for player, player_df in season_df.groupby('fullName'):
+            player_totals_df = all_players_info_df.loc[self._all_players_info_df['Player Name'] == player]
+
+            num_owners = len(player_df['owner'].unique())
+            # Calculations of Player points while in FA and while under ownership
+            if num_owners > 1:
+                # Initialize data
+                player_dict = {'Player Name': player, 'Player ID': int(player_totals_df['Player ID'].iloc[0])}
+                owners_dicts = []
+
+                # Gather bench or injured players stats (Used to calculate FA stats)
+                # Bench/IR = Sum of pts accumulated while placed on the Bench/IR
+                player_bir_df = season_bir_df[season_bir_df['fullName'] == player]
+                player_bir_pts = round(player_bir_df['appliedTotal'].sum(), 2)
+                player_bir_gp = player_bir_df['GP'].sum()
+                player_bir_pts_per_game = round(player_bir_pts / player_bir_gp, 1) if player_bir_gp != 0 else 0
+
+                # Gather Totals
+                # For the all players info dataframe, a goalie does not have GP stat (it would be NaN)
+                # but instead has a GS stat. If the GP stat is NaN then use GS in its calculation instead.
+                if math.isnan(player_totals_df['GP'].iloc[0]):
+                    total_gp = player_totals_df['GS'].iloc[0]
+                else:
+                    total_gp = player_totals_df['GP'].iloc[0]
+                total_pts = round(player_totals_df['Fantasy Points'].iloc[0], 2)
+                total_pts_per_game = round(total_pts / total_gp, 1) if total_gp != 0 else 0
+                owners_dicts.append({'Owner': "Total", 'GP': int(total_gp), 'PTS': total_pts, 'P/GP': total_pts_per_game})
+
+                # Gather totals between multiple owners for that player, used to calculate FA stats
+                mo_total_gp = player_df['GP'].sum()
+                mo_total_pts = round(player_df['appliedTotal'].sum(), 2)
+
+                # Gather Free Agents stats
+                # Free agency = Total pts - owners total points - bench/IR pts
+                fa_pts = abs(round(total_pts - mo_total_pts - player_bir_pts, 2))
+                fa_gp = abs(total_gp - mo_total_gp - player_bir_gp)
+                fa_pts_per_game = round(fa_pts / fa_gp, 1) if fa_gp != 0 else 0
+                if fa_gp != 0:
+                    owners_dicts.append({'Owner': "Free Agent", 'GP': int(fa_gp), 'PTS': fa_pts, 'P/GP': fa_pts_per_game})
+
+                # Gather data for each owner
+                for owner, owner_df in player_df.sort_values('GP', ascending=False).groupby('owner', sort=False):
+                    # Owners = Sum of pts accumulated on their roster
+                    pts = round(owner_df['appliedTotal'].iloc[0], 2)
+                    gp = owner_df['GP'].iloc[0]
+                    pts_per_game = round(pts / gp, 1) if gp != 0 else 0
+                    owners_dicts.append({'Owner': owner, 'GP': int(gp), 'PTS': pts, 'P/GP': pts_per_game})
+
+                # Insert bench and IR row
+                if player_bir_gp != 0:
+                    owners_dicts.append({'Owner': "Bench/IR", 'GP': int(player_bir_gp), 'PTS': player_bir_pts, 'P/GP': player_bir_pts_per_game})
+
+                # Finally, add owners data back into players data
+                player_dict['Owners'] = owners_dicts
+                player_data.append(player_dict)
+
+        return player_data
+
     def get_table_fig(self, season):
         """ Get a table figure of the stats for the given season. """
         # Filter for season
