@@ -259,7 +259,7 @@ def get_draft_points_fig(df):
 # -------------------------------------- Page content start ---------------------------------------
 # Page configs
 st.set_page_config(layout="wide")
-st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Dashboard</h2>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Season Dashboard</h2>", unsafe_allow_html=True)
 
 # Raw data
 daily_points_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
