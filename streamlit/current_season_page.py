@@ -3,14 +3,21 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit as st
+
+# Workaround for import stats to deploy on streamlit app
+# This is because it currently uses uv pip install on the requirements.txt file
+# Does not have the same package management as using uv sync on the pyproject.toml
+import sys
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(SCRIPT_DIR, ".."))
+
 from stats.daily_points import DailyPoints
 from stats.draft_player_points import DraftPlayerPoints
 from stats.draft_stats import DraftStats
 from stats.player_with_different_owners import PlayerWithDifferentOwners
 from stats.points_by_position import PointsByPosition
-import streamlit as st
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 DRAFT_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "draft_df.csv")
 ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
 ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
