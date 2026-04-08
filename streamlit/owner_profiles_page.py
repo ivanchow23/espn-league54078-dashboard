@@ -32,6 +32,18 @@ def get_draft_birth_country_fig(owner):
     fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=400)
     return fig
 
+def get_draft_conference_fig(owner):
+    """ Helper function to return a plotly figure for draft conference data. """
+    series = draft_stats.get_draft_player_conference_data(owner)
+
+    wedge_colour_map = {"Eastern": "#fc4b4b", "Western": "#206eff"}
+    wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in series.index]
+
+    fig = go.Figure()
+    fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours, hole=0.35, pull=0.03))
+    fig.update_layout(title="Drafted Conference", margin=dict(t=50, b=50), height=400)
+    return fig
+
 def get_draft_age_fig(owner):
     """ Helper function to return a plotly figure for draft age data. """
     series = draft_stats.get_draft_player_age_data(owner)
@@ -96,6 +108,7 @@ selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_
 # Draft stats container
 st.markdown("#### Draft Stats")
 container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
-container_cols = container.columns([1, 0.25, 1])
+container_cols = container.columns([1, 0.9, 1])
 container_cols[0].plotly_chart(get_draft_birth_country_fig(selected_owner))
+container_cols[1].plotly_chart(get_draft_conference_fig(selected_owner))
 container_cols[2].plotly_chart(get_draft_age_fig(selected_owner))

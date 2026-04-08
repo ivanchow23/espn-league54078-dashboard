@@ -31,6 +31,16 @@ class DraftStats():
         series = owner_df['Player Age'].value_counts()
         return series
 
+    def get_draft_player_conference_data(self, owner, season=None):
+        """ Get data for owner's draft conference for the given season. """
+        df = self._draft_df
+        if season is not None:
+            df = df[df['Season'] == season]
+
+        owner_df = df[df['Owner Name'] == owner]
+        series = owner_df['Conference'].value_counts()
+        return series
+
     def _process_data(self, draft_df):
         """ Apply some data processing to the data. """
         df = draft_df
