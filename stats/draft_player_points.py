@@ -2,12 +2,17 @@
 # %%
 # Imports
 #!/usr/bin/env python
+import os
 import pandas as pd
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+DRAFT_DATA_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "draft_df.csv")
+ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
+
 class DraftPlayerPoints():
-    def __init__(self, draft_df_path, daily_rosters_df_path):
-        self._draft_df = pd.read_csv(draft_df_path)
-        self._daily_rosters_df = pd.read_csv(daily_rosters_df_path)
+    def __init__(self):
+        self._draft_df = pd.read_csv(DRAFT_DATA_CSV_PATH)
+        self._daily_rosters_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
 
     def get_df(self, owner, season):
         """ Return dataframe of draft player points data for given owner and season.

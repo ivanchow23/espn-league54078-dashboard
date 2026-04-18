@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 import math
+import os
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
+ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
+
 class PlayerWithDifferentOwners():
-    def __init__(self, espn_fantasy_api_df_csv_path, espn_fantasy_api_all_players_info_df_csv_path):
+    def __init__(self):
         """ Default constructor. """
-        self._daily_rosters_df = pd.read_csv(espn_fantasy_api_df_csv_path)
-        self._all_players_info_df = pd.read_csv(espn_fantasy_api_all_players_info_df_csv_path)
+        self._daily_rosters_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
+        self._all_players_info_df = pd.read_csv(ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH)
         self._cols_of_interest = ['GP', 'appliedTotal', 'G', 'A', 'PPP', 'SHP', 'GWG', 'HAT', 'W', 'SO']
 
         # Dataframe of sums

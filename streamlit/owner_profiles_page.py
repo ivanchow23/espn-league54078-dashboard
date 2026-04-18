@@ -12,9 +12,7 @@ sys.path.insert(0, os.path.join(SCRIPT_DIR, ".."))
 
 from stats.draft_stats import DraftStats
 
-DRAFT_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "draft_df.csv")
-
-draft_stats = DraftStats(DRAFT_CSV_PATH)
+draft_stats = DraftStats()
 
 # ---------------------------------------- Helper Functions ---------------------------------------
 def get_draft_birth_country_fig(owner):
@@ -73,9 +71,6 @@ def get_draft_age_fig(owner):
 st.set_page_config(layout="wide")
 st.markdown(f"<h3 style='text-align: center;'>Owner Profiles</h2>", unsafe_allow_html=True)
 
-# Read data
-draft_df = pd.read_csv(DRAFT_CSV_PATH)
-
 # Select box
 select_options_container = st.container()
 select_options_cols = select_options_container.columns([1, 1, 1, 1])
@@ -101,7 +96,7 @@ select_options_container.markdown(
 )
 
 # Select owners to show
-owners_select_options = sorted(draft_df['Owner Name'].unique())
+owners_select_options = sorted(draft_stats.get_unique_owners())
 select_options_cols[0].markdown("#### Owner")
 selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_select_options, key="owners", label_visibility='collapsed')
 

@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+import os
 import pandas as pd
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
+
 class PointsByPosition():
-    def __init__(self, espn_fantasy_api_df_csv_path):
+    def __init__(self):
         """ Default constructor. """
-        self._daily_rosters_df = pd.read_csv(espn_fantasy_api_df_csv_path)
+        self._daily_rosters_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
         self._cols_of_interest = ['GP', 'appliedTotal', 'G', 'A', 'PPP', 'SHP', 'GWG', 'HAT', 'W', 'SO']
 
         # Omit slots where player is on bench or IR, which appear to be slots 7 and 8

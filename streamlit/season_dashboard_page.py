@@ -18,17 +18,15 @@ from stats.draft_stats import DraftStats
 from stats.player_with_different_owners import PlayerWithDifferentOwners
 from stats.points_by_position import PointsByPosition
 
-DRAFT_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "draft_df.csv")
-ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
-ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_all_players_info_df.csv")
+daily_points = DailyPoints()
 
 # ---------------------------------------- Helper Functions ---------------------------------------
 def get_daily_points_cumulative_df(season):
-    df = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_cumulative_points_df(season)
+    df = daily_points.get_cumulative_points_df(season)
     return df
 
 def get_daily_points_norm_by_avg_df(season):
-    df = DailyPoints(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH).get_normalized_by_avg_df('appliedTotal', season)
+    df = daily_points.get_normalized_by_avg_df('appliedTotal', season)
     return df
 
 def get_daily_points_plotly_fig(df, last_num_days=0):
@@ -271,12 +269,8 @@ def get_draft_points_fig(df):
 st.set_page_config(layout="wide")
 st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Season Dashboard</h2>", unsafe_allow_html=True)
 
-# Raw data
-daily_points_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
-
 # Select season to show
-seasons = sorted(daily_points_df['season'].unique(), reverse=True)
-seasons_select_options = sorted(daily_points_df['season'].astype(str).unique(), reverse=True)
+seasons_select_options = sorted(daily_points.get_seasons(), reverse=True)
 seasons_select_options = [season[:4] + "-" + season[4:] for season in seasons_select_options]
 seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
 season_select_container = st.container()
@@ -303,12 +297,12 @@ season_select_container.markdown(
     unsafe_allow_html=True
 )
 
-selected_season_str = season_select_cols[0].selectbox(label="Show Season", options=seasons_select_options, key=seasons, label_visibility='collapsed')
+selected_season_str = season_select_cols[0].selectbox(label="Show Season", options=seasons_select_options, label_visibility='collapsed')
 selected_season_str = selected_season_str.replace("-", "")
 if "Current" in selected_season_str:
-    selected_season = seasons[seasons.index(int(selected_season_str.strip(" (Current)")))]
+    selected_season = int(selected_season_str.strip(" (Current)"))
 else:
-    selected_season = seasons[seasons.index(int(selected_season_str))]
+    selected_season = int(selected_season_str)
 
 # Daily plots stats containers
 st.markdown("#### Daily Points Stats")
@@ -335,7 +329,7 @@ elif daily_pts_num_days_select == "Last 30 Days":
 
 # Points by position stats containers
 st.markdown("#### Points by Position Stats")
-points_by_pos = PointsByPosition(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
+points_by_pos = PointsByPosition()
 points_by_pos_container = st.container(border=True, height="stretch", width="stretch")
 points_by_pos_num_days_select = points_by_pos_container.selectbox(label="Show For", options=["Last 7 Days", "Last 14 Days", "Last 30 Days", "Full Season"], key="points_by_pos_num_days", width=250)
 points_by_pos_container.html("<p style='text-align: left; font-size: 12px;'>Note: Stats are <b>inclusive</b> of first day in selected range.</p>")
@@ -378,7 +372,7 @@ update_top_position_stats_metrics(points_by_pos_plots_cols[1], top_defencemen_df
 st.markdown("#### Players with Different Owners Stats")
 st.markdown("##### _\"Roope Stats\"_")
 players_diff_owners_num_cols_per_row = 4
-players_diff_owners_dicts = PlayerWithDifferentOwners(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH, ESPN_FANTASY_API_ALL_PLAYERS_INFO_CSV_PATH).get_dicts(selected_season)
+players_diff_owners_dicts = PlayerWithDifferentOwners().get_dicts(selected_season)
 
 for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_per_row):
     cols = st.columns(players_diff_owners_num_cols_per_row)
@@ -401,8 +395,8 @@ for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_p
 
 # Draft stats container
 st.markdown("#### Draft Stats")
-draft_stats = DraftStats(DRAFT_CSV_PATH)
-draft_player_points_stats = DraftPlayerPoints(DRAFT_CSV_PATH, ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
+draft_stats = DraftStats()
+draft_player_points_stats = DraftPlayerPoints()
 draft_stats_owners = draft_stats.get_unique_owners()
 for owner in draft_stats_owners:
     container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")

@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+import os
 import pandas as pd
 
+DRAFT_DATA_CSV_PATH = os.path.join("..", "docs", "data", "draft_df.csv")
+
 class DraftStats():
-    def __init__(self, draft_df_path):
+    def __init__(self):
         """ Default constructor. """
-        self._draft_df = pd.read_csv(draft_df_path)
+        self._draft_df = pd.read_csv(DRAFT_DATA_CSV_PATH)
         self._draft_df = self._process_data(self._draft_df)
 
     def get_unique_owners(self):
