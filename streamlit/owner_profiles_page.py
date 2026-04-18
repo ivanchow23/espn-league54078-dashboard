@@ -11,10 +11,23 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(SCRIPT_DIR, ".."))
 
 from stats.draft_stats import DraftStats
+from stats.standings_points_stats import StandingsPointsStats
 
 draft_stats = DraftStats()
+standing_points_stats = StandingsPointsStats()
 
 # ---------------------------------------- Helper Functions ---------------------------------------
+def get_rankings_fig(owner):
+    """ Helper function to return a plotly figure of rankings data. """
+    ranking_counts = standing_points_stats.get_owner_ranking_count(owner)
+    wedge_colour_map = {"1st": '#ffd700', "2nd": '#b0c4de', "3rd": '#d2b48c'}
+    wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in ranking_counts.index]
+
+    fig = go.Figure()
+    fig.add_trace(go.Pie(labels=ranking_counts.index, values=ranking_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025))
+    fig.update_layout(title="Standing Rankings", margin=dict(t=50, b=20), height=300, legend=dict(x=1.0, y=0.5, xanchor='left', yanchor='middle'))
+    return fig
+
 def get_draft_birth_country_fig(owner):
     """ Helper function to return a plotly figure for draft birth country data. """
     series = draft_stats.get_draft_birth_country_data(owner)
@@ -99,6 +112,12 @@ select_options_container.markdown(
 owners_select_options = sorted(draft_stats.get_unique_owners())
 select_options_cols[0].markdown("#### Owner")
 selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_select_options, key="owners", label_visibility='collapsed')
+
+# Standings stats container
+st.markdown("#### Standings Stats")
+container = st.container(border=False, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
+container_cols = container.columns(2)
+container_cols[0].container(border=True).plotly_chart(get_rankings_fig(selected_owner))
 
 # Draft stats container
 st.markdown("#### Draft Stats")
