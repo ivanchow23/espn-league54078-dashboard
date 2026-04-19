@@ -24,8 +24,9 @@ def get_rankings_fig(owner):
     wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in ranking_counts.index]
 
     fig = go.Figure()
-    fig.add_trace(go.Pie(labels=ranking_counts.index, values=ranking_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025))
-    fig.update_layout(title="Standing Rankings", margin=dict(t=50, b=20), height=300, legend=dict(x=1.0, y=0.5, xanchor='left', yanchor='middle'))
+    fig.add_trace(go.Pie(labels=ranking_counts.index, values=ranking_counts, name=owner, marker_colors=wedge_colours,
+                         hole=0.25, pull=0.025, textinfo='label+value', textposition='auto'))
+    fig.update_layout(title="Standing Rankings", margin=dict(t=50, b=20), height=300, showlegend=False)
     return fig
 
 def get_draft_positions_fig(owner):
@@ -34,8 +35,8 @@ def get_draft_positions_fig(owner):
     wedge_colours = ["lightblue" for _ in position_counts.index]
 
     fig = go.Figure()
-    fig.add_trace(go.Pie(labels=position_counts.index, values=position_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025))
-    fig.update_layout(title="Draft Positions", margin=dict(t=50, b=20), height=300, legend=dict(x=1.0, y=0.5, xanchor='left', yanchor='middle'))
+    fig.add_trace(go.Pie(labels=position_counts.index, values=position_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025, textinfo='label+value', textposition='auto'))
+    fig.update_layout(title="Draft Positions", margin=dict(t=50, b=20), height=300, showlegend=False)
     return fig
 
 def get_draft_birth_country_fig(owner):
@@ -49,8 +50,8 @@ def get_draft_birth_country_fig(owner):
     fig = go.Figure()
     wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in series.index]
     fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours,
-                         hole=0.35, pull=[0.075 if i == 0 else 0.03 for i, _ in enumerate(series.values)]))
-    fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=400)
+                         hole=0.35, pull=[0.075 if i == 0 else 0.03 for i, _ in enumerate(series.values)], textinfo='label+value', textposition='auto'))
+    fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=400, showlegend=False)
     return fig
 
 def get_draft_conference_fig(owner):
@@ -61,8 +62,8 @@ def get_draft_conference_fig(owner):
     wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in series.index]
 
     fig = go.Figure()
-    fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours, hole=0.35, pull=0.03))
-    fig.update_layout(title="Drafted Conference", margin=dict(t=50, b=50), height=400)
+    fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours, hole=0.35, pull=0.03, textinfo='label+value', textposition='auto'))
+    fig.update_layout(title="Drafted Conference", margin=dict(t=50, b=50), height=400, showlegend=False)
     return fig
 
 def get_draft_age_fig(owner):
@@ -133,7 +134,7 @@ container_cols[1].container(border=True).plotly_chart(get_draft_positions_fig(se
 # Draft stats container
 st.markdown("#### Draft Stats")
 container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
-container_cols = container.columns([1, 0.9, 1])
+container_cols = container.columns(3)
 container_cols[0].plotly_chart(get_draft_birth_country_fig(selected_owner))
 container_cols[1].plotly_chart(get_draft_conference_fig(selected_owner))
 container_cols[2].plotly_chart(get_draft_age_fig(selected_owner))
