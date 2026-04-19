@@ -22,6 +22,24 @@ class StandingsPointsStats():
         owner_df['RK'] = owner_df['RK'].apply(self._number_ordinal)
         return owner_df['RK'].value_counts().sort_index()
 
+    def get_owner_seasons_normalized_by_league_avg(self, owner):
+        """ Returns dataframe of total points normalized by league average for
+            all seasons for a given owner. Percent +/- Avg shows how much above/below
+            the owner's total is compared to the league average. """
+        owner_df = self._standings_points_df[self._standings_points_df['Owner'] == owner].copy()
+
+        results = []
+        for season in sorted(owner_df['Season'].unique()):
+            season_df = self._standings_points_df[self._standings_points_df['Season'] == season]
+            league_avg = season_df['TOT'].mean()
+
+            owner_season_tot = owner_df[owner_df['Season'] == season]['TOT'].iloc[0]
+            results.append({'Season': str(season),
+                            '+/- Avg %': round(((owner_season_tot - league_avg) / league_avg) * 100, 2),
+                            'Rank': owner_df[owner_df['Season'] == season]['RK'].iloc[0]})
+
+        return pd.DataFrame(results)
+
     def _number_ordinal(self, val):
         """ Simple function to convert an integer to a "numerical ordinal"
             string. Example: 1, 2, 3, 4 -> 1st, 2nd, 3rd, 4th. """

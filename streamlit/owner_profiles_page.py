@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import streamlit as st
 
 # Workaround for import stats to deploy on streamlit app
@@ -37,6 +38,28 @@ def get_draft_positions_fig(owner):
     fig = go.Figure()
     fig.add_trace(go.Pie(labels=position_counts.index, values=position_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025, textinfo='label+value', textposition='auto'))
     fig.update_layout(title="Draft Positions", margin=dict(t=50, b=20), height=300, showlegend=False)
+    return fig
+
+def get_seasons_normalized_by_league_avg_fig(owner):
+    """ Helper function to return a plotly figure of an owner's season stats
+        normalized by league average with bar chart of +/- Avg % and line chart of Rank. """
+    df = standing_points_stats.get_owner_seasons_normalized_by_league_avg(owner)
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(go.Bar(x=df['Season'], y=df['+/- Avg %'], name='+/- Avg %',
+                         marker_color=['#3ECA56' if x >= 0 else "#EE4B4B" for x in df['+/- Avg %']]))
+    fig.add_trace(go.Scatter(x=df['Season'], y=df['Rank'], name='Rank', mode='lines+markers'), secondary_y=True)
+
+    fig.update_layout(
+        title="Season Performance vs. League Average",
+        xaxis=dict(title="Season", type='category'),
+        yaxis=dict(title='+/- Avg %', side='left', range=[-15, 15]),
+        yaxis2=dict(title='Rank', overlaying='y', side='right', range=[8, 0], autorange=False),
+        margin=dict(t=50, b=20),
+        height=300,
+        hovermode='x unified',
+        legend=dict(x=1.1, y=1.25, xanchor='right', yanchor='top'))
+
     return fig
 
 def get_draft_birth_country_fig(owner):
@@ -127,9 +150,10 @@ selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_
 # Standings stats container
 st.markdown("#### Summary Stats")
 container = st.container(border=False, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
-container_cols = container.columns(3)
-container_cols[0].container(border=True).plotly_chart(get_rankings_fig(selected_owner))
-container_cols[1].container(border=True).plotly_chart(get_draft_positions_fig(selected_owner))
+container_cols = container.columns([1, 0.5, 0.5])
+container_cols[0].container(border=True).plotly_chart(get_seasons_normalized_by_league_avg_fig(selected_owner))
+container_cols[1].container(border=True).plotly_chart(get_rankings_fig(selected_owner))
+container_cols[2].container(border=True).plotly_chart(get_draft_positions_fig(selected_owner))
 
 # Draft stats container
 st.markdown("#### Draft Stats")
