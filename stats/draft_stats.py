@@ -44,6 +44,12 @@ class DraftStats():
         series = owner_df['Conference'].value_counts()
         return series
 
+    def get_owner_draft_position_data(self, owner):
+        """ Get data for an owner's draft position for all seasons. """
+        owner_df = self._draft_df[self._draft_df['Owner Name'] == owner].copy()
+        first_round_df = owner_df[owner_df['Round Number'] == 1]
+        return first_round_df['Draft Number'].apply(self._number_ordinal).value_counts()
+
     def _process_data(self, draft_df):
         """ Apply some data processing to the data. """
         df = draft_df
@@ -57,3 +63,15 @@ class DraftStats():
 
         # Keep as-is
         return country_code
+
+    def _number_ordinal(self, val):
+        """ Simple function to convert an integer to a "numerical ordinal"
+            string. Example: 1, 2, 3, 4 -> 1st, 2nd, 3rd, 4th. """
+        if val == 1:
+            return "1st"
+        elif val == 2:
+            return "2nd"
+        elif val == 3:
+            return "3rd"
+        else:
+            return f"{val}th"

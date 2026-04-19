@@ -28,6 +28,16 @@ def get_rankings_fig(owner):
     fig.update_layout(title="Standing Rankings", margin=dict(t=50, b=20), height=300, legend=dict(x=1.0, y=0.5, xanchor='left', yanchor='middle'))
     return fig
 
+def get_draft_positions_fig(owner):
+    """ Helper function to return a plotly figure of draft positions data. """
+    position_counts = draft_stats.get_owner_draft_position_data(owner)
+    wedge_colours = ["lightblue" for _ in position_counts.index]
+
+    fig = go.Figure()
+    fig.add_trace(go.Pie(labels=position_counts.index, values=position_counts, name=owner, marker_colors=wedge_colours, hole=0.25, pull=0.025))
+    fig.update_layout(title="Draft Positions", margin=dict(t=50, b=20), height=300, legend=dict(x=1.0, y=0.5, xanchor='left', yanchor='middle'))
+    return fig
+
 def get_draft_birth_country_fig(owner):
     """ Helper function to return a plotly figure for draft birth country data. """
     series = draft_stats.get_draft_birth_country_data(owner)
@@ -114,10 +124,11 @@ select_options_cols[0].markdown("#### Owner")
 selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_select_options, key="owners", label_visibility='collapsed')
 
 # Standings stats container
-st.markdown("#### Standings Stats")
+st.markdown("#### Summary Stats")
 container = st.container(border=False, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
-container_cols = container.columns(2)
+container_cols = container.columns(3)
 container_cols[0].container(border=True).plotly_chart(get_rankings_fig(selected_owner))
+container_cols[1].container(border=True).plotly_chart(get_draft_positions_fig(selected_owner))
 
 # Draft stats container
 st.markdown("#### Draft Stats")
