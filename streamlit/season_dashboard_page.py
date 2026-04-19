@@ -271,7 +271,7 @@ st.markdown(f"<h3 style='text-align: center;'>ESPN League 54078 Season Dashboard
 
 # Select season to show
 seasons_select_options = sorted(daily_points.get_seasons(), reverse=True)
-seasons_select_options = [season[:4] + "-" + season[4:] for season in seasons_select_options]
+seasons_select_options = [str(season)[:4] + "-" + str(season)[4:] for season in seasons_select_options]
 seasons_select_options[0] = f"{seasons_select_options[0]} (Current)"
 season_select_container = st.container()
 season_select_container.markdown("#### Season to Display")
