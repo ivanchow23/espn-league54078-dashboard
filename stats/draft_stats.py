@@ -2,7 +2,8 @@
 import os
 import pandas as pd
 
-DRAFT_DATA_CSV_PATH = os.path.join("..", "docs", "data", "draft_df.csv")
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+DRAFT_DATA_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "draft_df.csv")
 
 class DraftStats():
     def __init__(self):

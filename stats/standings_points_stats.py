@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 
-STANDINGS_POINTS_CSV_PATH = os.path.join("..", "docs", "data", "standings_points_df.csv")
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+STANDINGS_POINTS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "standings_points_df.csv")
 
 class StandingsPointsStats():
     def __init__(self):
