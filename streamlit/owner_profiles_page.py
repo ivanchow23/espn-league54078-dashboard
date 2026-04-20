@@ -147,8 +147,18 @@ owners_select_options = sorted(draft_stats.get_unique_owners())
 select_options_cols[0].markdown("#### Owner")
 selected_owner = select_options_cols[0].selectbox(label="Owner", options=owners_select_options, key="owners", label_visibility='collapsed')
 
-# Standings stats container
+# Summary stats container
 st.markdown("#### Summary Stats")
+container = st.container(border=True, horizontal=True)
+container.metric(label="Seasons Played", value=standing_points_stats.get_owner_num_seasons_active(selected_owner), delta_arrow="off",
+                 delta=f"{standing_points_stats.get_owner_first_season(selected_owner)} - {standing_points_stats.get_owner_last_season(selected_owner)}")
+s, p, c = standing_points_stats.get_owner_best_improved_season(selected_owner)
+container.metric(label="Best Improved Season", value=s, delta=f"{p} to {c}")
+container.metric(label="Average Rank", value=standing_points_stats.get_owner_average_rank(selected_owner))
+container.metric(label="Average vs. League Average",
+                 value=f"{round(standing_points_stats.get_owner_seasons_normalized_by_league_avg(selected_owner)['+/- Avg %'].mean(), 2)}%")
+
+# Summary stats charts
 container = st.container(border=False, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
 container_cols = container.columns([1, 0.5, 0.5])
 container_cols[0].container(border=True).plotly_chart(get_seasons_normalized_by_league_avg_fig(selected_owner))

@@ -16,6 +16,18 @@ class StandingsPointsStats():
         """ Returns number of seasons active for an owner. """
         return len(self._standings_points_df[self._standings_points_df['Owner'] == owner])
 
+    def get_owner_first_season(self, owner):
+        """ Returns an owner's first active season. """
+        return self._standings_points_df[self._standings_points_df['Owner'] == owner]['Season'].min()
+
+    def get_owner_last_season(self, owner):
+        """ Returns an owner's last active season. """
+        return self._standings_points_df[self._standings_points_df['Owner'] == owner]['Season'].max()
+
+    def get_owner_average_rank(self, owner):
+        """ Returns an owner's average rank for all seasons. """
+        return round(self._standings_points_df[self._standings_points_df['Owner'] == owner]['RK'].mean(), 1)
+
     def get_owner_ranking_count(self, owner):
         """ Returns number of times an owner has placed in a certain position. """
         owner_df = self._standings_points_df[self._standings_points_df['Owner'] == owner].copy()
@@ -39,6 +51,18 @@ class StandingsPointsStats():
                             'Rank': owner_df[owner_df['Season'] == season]['RK'].iloc[0]})
 
         return pd.DataFrame(results)
+
+    def get_owner_best_improved_season(self, owner):
+        """ Returns information for an owner's best improved season. """
+        owner_df = self._standings_points_df[self._standings_points_df['Owner'] == owner].copy()
+        owner_df = owner_df.sort_values('Season').reset_index(drop=True)
+        owner_df['RK Diff'] = owner_df['RK'].diff()
+        idx = owner_df['RK Diff'].idxmin() # Get min value because lower rank is better
+
+        season = str(owner_df.loc[idx, 'Season'])[:4] + "-" + str(owner_df.loc[idx, 'Season'])[4:]
+        prev_rk = self._number_ordinal(owner_df.loc[idx - 1, 'RK'])
+        rk = self._number_ordinal(owner_df.loc[idx, 'RK'])
+        return season, prev_rk, rk
 
     def _number_ordinal(self, val):
         """ Simple function to convert an integer to a "numerical ordinal"
