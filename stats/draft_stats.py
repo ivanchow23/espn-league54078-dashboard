@@ -50,6 +50,16 @@ class DraftStats():
         first_round_df = owner_df[owner_df['Round Number'] == 1]
         return first_round_df['Draft Number'].apply(self._number_ordinal).value_counts()
 
+    def get_owner_top_drafted_players(self, owner, num_players=5):
+        """ Gets top drafted players of the given owner. """
+        owner_df = self._draft_df[self._draft_df['Owner Name'] == owner].copy()
+        owner_df = owner_df.dropna(subset=['Player ID'])
+        owner_df['Player ID'] = owner_df['Player ID'].astype(int)
+
+        player_counts = owner_df.groupby(['Player', 'Player ID']).size().reset_index(name='Count')
+        df = player_counts.sort_values('Count', ascending=False).reset_index(drop=True).head(num_players)
+        return df.to_dict('records')
+
     def _process_data(self, draft_df):
         """ Apply some data processing to the data. """
         df = draft_df

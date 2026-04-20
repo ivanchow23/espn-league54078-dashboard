@@ -74,7 +74,7 @@ def get_draft_birth_country_fig(owner):
     wedge_colours = [wedge_colour_map[index] if index in wedge_colour_map else "darkgray" for index in series.index]
     fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours,
                          hole=0.35, pull=[0.075 if i == 0 else 0.03 for i, _ in enumerate(series.values)], textinfo='label+value', textposition='auto'))
-    fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=400, showlegend=False)
+    fig.update_layout(title="Player Birth Countries", margin=dict(t=50, b=50), height=350, showlegend=False)
     return fig
 
 def get_draft_conference_fig(owner):
@@ -86,7 +86,7 @@ def get_draft_conference_fig(owner):
 
     fig = go.Figure()
     fig.add_trace(go.Pie(labels=series.index, values=series.values, marker_colors=wedge_colours, hole=0.35, pull=0.03, textinfo='label+value', textposition='auto'))
-    fig.update_layout(title="Drafted Conference", margin=dict(t=50, b=50), height=400, showlegend=False)
+    fig.update_layout(title="Drafted Conference", margin=dict(t=50, b=50), height=350, showlegend=False)
     return fig
 
 def get_draft_age_fig(owner):
@@ -110,7 +110,7 @@ def get_draft_age_fig(owner):
     fig = go.Figure()
     fig.add_trace(go.Bar(x=series.index, y=series.values))
     fig.update_layout(title=f"Player Age", xaxis_title=f"Age (Min = {min} | Mean = {mean} | Max = {max})",
-                      yaxis_title="# of Picks", margin=dict(t=50, b=10), height=400)
+                      yaxis_title="# of Picks", margin=dict(t=50, b=10), height=350)
     return fig
 
 # -------------------------------------- Page content start ---------------------------------------
@@ -167,8 +167,17 @@ container_cols[2].container(border=True).plotly_chart(get_draft_positions_fig(se
 
 # Draft stats container
 st.markdown("#### Draft Stats")
-container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="center")
+st.markdown("###### _Note: May exclude 2014-2015 season due to missing data_")
+container = st.container(border=True)
 container_cols = container.columns(3)
 container_cols[0].plotly_chart(get_draft_birth_country_fig(selected_owner))
 container_cols[1].plotly_chart(get_draft_conference_fig(selected_owner))
 container_cols[2].plotly_chart(get_draft_age_fig(selected_owner))
+
+container = st.container(border=True)
+container.markdown("###### Top Players Drafted")
+container = container.container(border=False, horizontal_alignment="left", horizontal=True)
+players_data = draft_stats.get_owner_top_drafted_players(selected_owner, num_players=10)
+for p in players_data:
+    container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{p['Player ID']}.png",
+                    caption=f"{p['Player']} ({p['Count']})", width=150)
