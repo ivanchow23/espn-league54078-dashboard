@@ -167,7 +167,6 @@ container_cols[2].container(border=True).plotly_chart(get_draft_positions_fig(se
 
 # Draft stats container
 st.markdown("#### Draft Stats")
-st.markdown("###### _Note: May exclude 2014-2015 season due to missing data_")
 container = st.container(border=True)
 container_cols = container.columns(3)
 container_cols[0].plotly_chart(get_draft_birth_country_fig(selected_owner))
