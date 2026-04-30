@@ -113,6 +113,18 @@ def get_draft_age_fig(owner):
                       yaxis_title="# of Picks", margin=dict(t=50, b=10), height=350)
     return fig
 
+def draft_data_to_nhle_api_team_abbrev(s):
+    """ Simple helper function to convert draft team abbreviations to NHL API team
+        abbreviations so we can reference the team logo images. """
+    mapping = {'CLS': "CBJ",
+               'LA': "LAK",
+               'MON': "MTL",
+               'NJ': "NJD",
+               'SJ': "SJS",
+               'TB': "TBL"}
+
+    return mapping[s] if s in mapping else s
+
 # -------------------------------------- Page content start ---------------------------------------
 # Page configs
 st.set_page_config(layout="wide")
@@ -174,9 +186,17 @@ container_cols[1].plotly_chart(get_draft_conference_fig(selected_owner))
 container_cols[2].plotly_chart(get_draft_age_fig(selected_owner))
 
 container = st.container(border=True)
-container.markdown("###### Top Players Drafted")
-container = container.container(border=False, horizontal_alignment="left", horizontal=True)
+container_cols = container.columns(2)
+container_cols[0].markdown("###### Top Players Drafted")
+c = container_cols[0].container(border=False, horizontal_alignment="left", horizontal=True)
 players_data = draft_stats.get_owner_top_drafted_players(selected_owner, num_players=10)
 for p in players_data:
-    container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{p['Player ID']}.png",
-                    caption=f"{p['Player']} ({p['Count']})", width=150)
+    c.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{p['Player ID']}.png",
+            caption=f"{p['Player']} ({p['Count']})", width=150)
+
+container_cols[1].markdown("###### Top Teams Drafted")
+c = container_cols[1].container(border=False, horizontal_alignment="left", horizontal=True)
+teams_data = draft_stats.get_owner_top_drafted_teams(selected_owner, num_teams=10)
+for t in teams_data:
+    c.image(f"https://assets.nhle.com/logos/nhl/svg/{draft_data_to_nhle_api_team_abbrev(t['Team'])}_light.svg",
+            caption=f"{t['Team']} ({t['Count']})", width=150)

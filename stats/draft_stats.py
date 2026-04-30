@@ -61,6 +61,14 @@ class DraftStats():
         df = player_counts.sort_values('Count', ascending=False).reset_index(drop=True).head(num_players)
         return df.to_dict('records')
 
+    def get_owner_top_drafted_teams(self, owner, num_teams=5):
+        """ Gets top drafted teams of the given owner. """
+        owner_df = self._draft_df[self._draft_df['Owner Name'] == owner].copy()
+        team_counts = owner_df['Team'].value_counts().reset_index()
+        team_counts.columns = ['Team', 'Count']
+        df = team_counts.sort_values('Count', ascending=False).reset_index(drop=True).head(num_teams)
+        return df.to_dict('records')
+
     def _process_data(self, draft_df):
         """ Apply some data processing to the data. """
         df = draft_df
