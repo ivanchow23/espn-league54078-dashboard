@@ -17,6 +17,7 @@ from stats.draft_player_points import DraftPlayerPoints
 from stats.draft_stats import DraftStats
 from stats.player_with_different_owners import PlayerWithDifferentOwners
 from stats.points_by_position import PointsByPosition
+from stats.roster_change_stats import RosterChangeStats
 
 daily_points = DailyPoints()
 
@@ -394,6 +395,27 @@ for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_p
                                                                        'GP': st.column_config.Column(width=20),
                                                                        'PTS': st.column_config.Column(width=40),
                                                                        'P/GP': st.column_config.Column(width=30)})
+
+
+st.markdown("#### Free Agent Stats")
+container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="left")
+container.markdown("###### Players Re-Added by Same Owner")
+container_cols = container.columns([0.4, 1])
+container_cols[0].image("https://en.meming.world/images/en/4/4a/Moe_Tossing_Barney_From_Moe%27s.jpg", width=400)
+roster_change_stats = RosterChangeStats()
+readd_players_df = roster_change_stats.get_players_multiple_added_stats_all_owners(selected_season)
+if not readd_players_df.empty:
+    for owner, owner_df in readd_players_df.groupby('Owner'):
+        owner_container = container_cols[1].container(border=True)
+        owner_container.markdown(f"###### {owner}")
+        for (player, id), player_df in owner_df.groupby(['Player Name', 'Player ID']):
+            p = owner_container.container(border=False, horizontal=True)
+
+            # Cast to string type to somehow make cols appear left-aligned
+            # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
+            df = player_df[['Day Range', 'GP', 'PTS', 'P/GP']].astype(str)
+            p.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{id}.png", caption=player, width=150)
+            p.dataframe(df, hide_index=True)
 
 # Draft stats container
 st.markdown("#### Draft Stats")
