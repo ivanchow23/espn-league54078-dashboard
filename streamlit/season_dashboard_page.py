@@ -374,28 +374,16 @@ update_top_position_stats_metrics(points_by_pos_plots_cols[1], top_defencemen_df
 # Players with different owners stats containers
 st.markdown("#### Players with Different Owners Stats")
 st.markdown("##### _\"Roope Stats\"_")
-players_diff_owners_num_cols_per_row = 4
 players_diff_owners_dicts = PlayerWithDifferentOwners().get_dicts(selected_season)
+container = st.container(border=False, horizontal_alignment="left", horizontal=True)
+for player_dict in players_diff_owners_dicts:
+    p = container.container(border=True, horizontal_alignment="center", vertical_alignment="center", width=325, gap=None)
+    p.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=150)
 
-for i in range(0, len(players_diff_owners_dicts), players_diff_owners_num_cols_per_row):
-    cols = st.columns(players_diff_owners_num_cols_per_row)
-    for j, col in enumerate(cols):
-        idx = i + j
-        if idx >= len(players_diff_owners_dicts):
-            break
-
-        player_dict = players_diff_owners_dicts[idx]
-        player_container = col.container(border=True, height="stretch", width="stretch", vertical_alignment="top", horizontal_alignment="center")
-        player_container.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{player_dict['Player ID']}.png", caption=player_dict['Player Name'], width=150)
-
-        # Cast to string type to somehow make cols appear left-aligned
-        # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
-        df = pd.DataFrame(player_dict['Owners']).astype(str)
-        player_container.dataframe(df, hide_index=True, column_config={'Owner': st.column_config.Column(width=105),
-                                                                       'GP': st.column_config.Column(width=20),
-                                                                       'PTS': st.column_config.Column(width=40),
-                                                                       'P/GP': st.column_config.Column(width=30)})
-
+    # Cast to string type to somehow make cols appear left-aligned
+    # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
+    df = pd.DataFrame(player_dict['Owners']).astype(str)
+    p.dataframe(df, hide_index=True)
 
 st.markdown("#### Free Agent Stats")
 container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="left")
