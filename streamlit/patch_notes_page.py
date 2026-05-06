@@ -2,6 +2,15 @@ import streamlit as st
 
 patch_notes_list = [
 """
+### v1.2.0
+* Added new Owner Profiles page
+* Added "Players Re-Added by Same Owner" stats
+* Added Eastern vs. Western Conference draft stats
+* Renamed "Current Season" page to "Season Dashboard"
+* Minor updates to formatting
+""",
+
+"""
 ### v1.1.0
 * Updated "Season to Display" selectbox to be "sticky" as user scrolls the page
 * Minor updates to formatting
