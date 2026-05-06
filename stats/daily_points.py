@@ -1,11 +1,15 @@
 #!/usr/bin/env python
+import os
 import pandas as pd
 import plotly.graph_objects as go
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH = os.path.join(SCRIPT_DIR, "..", "docs", "data", "espn_fantasy_api_daily_rosters_df.csv")
+
 class DailyPoints():
-    def __init__(self, espn_fantasy_api_df_csv_path):
+    def __init__(self):
         """ Default constructor. """
-        self._daily_rosters_df = pd.read_csv(espn_fantasy_api_df_csv_path)
+        self._daily_rosters_df = pd.read_csv(ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH)
         self._cols_of_interest = ['GP', 'appliedTotal', 'G', 'A', 'PPP', 'SHP', 'GWG', 'HAT', 'W', 'SO']
 
         # Dataframe of cumulative sums
@@ -29,7 +33,7 @@ class DailyPoints():
 
     def get_seasons(self):
         """ Returns list of valid seasons contained in the data. """
-        return self._daily_rosters_df['season'].unique()
+        return sorted(list(self._daily_rosters_df['season'].unique()))
 
     def get_cumulative_points_plot(self, key, season):
         """ Get plot of raw cumulative points for the given season. """
@@ -96,4 +100,9 @@ class DailyPoints():
         cumsum_df[[f"{col}_cumsum" for col in self._cols_of_interest]] = daily_totals_df.groupby(['owner', 'season'])[self._cols_of_interest].cumsum()
         cumsum_df = cumsum_df.drop(columns=self._cols_of_interest)
         cumsum_df = cumsum_df.rename(columns={f"{col}_cumsum": col for col in self._cols_of_interest})
+
+        # Insert league average data
+        league_avg_df = cumsum_df.groupby(['scoringPeriodId', 'season'])[self._cols_of_interest].mean().round(2).reset_index()
+        league_avg_df['owner'] = "League Average"
+        cumsum_df = pd.concat([cumsum_df, league_avg_df])
         return cumsum_df
