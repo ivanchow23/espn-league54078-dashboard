@@ -385,24 +385,23 @@ for player_dict in players_diff_owners_dicts:
     df = pd.DataFrame(player_dict['Owners']).astype(str)
     p.dataframe(df, hide_index=True)
 
-st.markdown("#### Free Agent Stats")
-container = st.container(border=True, height="stretch", width="stretch", vertical_alignment="center", horizontal_alignment="left")
-container.markdown("###### Players Re-Added by Same Owner")
-container_cols = container.columns([0.4, 1])
-container_cols[0].image("https://en.meming.world/images/en/4/4a/Moe_Tossing_Barney_From_Moe%27s.jpg", width=400)
+st.markdown("#### Players Re-Added by Same Owner")
+container = st.container(border=False, vertical_alignment="top", horizontal_alignment="left", horizontal=True)
+container_cols = container.columns([0.2, 1])
+container_cols[0].image("https://en.meming.world/images/en/4/4a/Moe_Tossing_Barney_From_Moe%27s.jpg")
 roster_change_stats = RosterChangeStats()
 readd_players_df = roster_change_stats.get_players_multiple_added_stats_all_owners(selected_season)
 if not readd_players_df.empty:
+    con = container_cols[1].container(border=False, horizontal=True)
     for owner, owner_df in readd_players_df.groupby('Owner'):
-        owner_container = container_cols[1].container(border=True)
-        owner_container.markdown(f"###### {owner}")
-        for (player, id), player_df in owner_df.groupby(['Player Name', 'Player ID']):
-            p = owner_container.container(border=False, horizontal=True)
+        for (player, id), df in owner_df.groupby(['Player Name', 'Player ID']):
+            p = con.container(border=True, horizontal_alignment="center", vertical_alignment="top", width=275, gap=None)
+            p.text(f"{owner}")
+            p.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{id}.png", caption=player, width=150)
 
             # Cast to string type to somehow make cols appear left-aligned
             # https://discuss.streamlit.io/t/st-dataframe-numbers-left-aligned/84901/2
-            df = player_df[['Day Range', 'GP', 'PTS', 'P/GP']].astype(str)
-            p.image(f"https://a.espncdn.com/i/headshots/nhl/players/full/{id}.png", caption=player, width=150)
+            df = df[['Day Range', 'GP', 'PTS', 'P/GP']].astype(str)
             p.dataframe(df, hide_index=True)
 
 # Draft stats container
