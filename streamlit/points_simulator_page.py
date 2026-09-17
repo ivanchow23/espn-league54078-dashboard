@@ -31,7 +31,7 @@ EARLIEST_SUPPORTED_SEASON = 20232024
 
 
 @st.cache_resource
-def get_daily_points():
+def get_daily_points(data_modified_time):
 	return DailyPoints()
 
 
@@ -42,18 +42,26 @@ def format_season(season):
 
 def get_simulation_totals(daily_points, season, scoring_values):
 	totals_df = daily_points.get_simulated_points_df(season, scoring_values, ACTUAL_SCORING_VALUES)
+	position_totals_df = daily_points.get_simulated_points_by_position_df(
+		season, scoring_values, ACTUAL_SCORING_VALUES
+	)
+	totals_df = totals_df.merge(position_totals_df, on='owner', how='left').fillna(0)
 	first_place_points = totals_df['simulatedPoints'].iloc[0]
 	totals_df['Difference from First'] = (totals_df['simulatedPoints'] - first_place_points).round(2)
 	if first_place_points:
-		totals_df['Percent Difference from First'] = (
+		percent_difference = (
 			(totals_df['Difference from First'] / first_place_points) * 100
 		).round(1)
 	else:
-		totals_df['Percent Difference from First'] = 0.0
+		percent_difference = [0.0] * len(totals_df)
+	totals_df['Percent Difference from First'] = percent_difference
 	totals_df['simulatedPoints'] = totals_df['simulatedPoints'].round(2)
 	totals_df.index = range(1, len(totals_df) + 1)
 	return totals_df.rename(columns={'owner': 'Team Owner', 'simulatedPoints': 'Total Points'})[
-		['Team Owner', 'Total Points', 'Difference from First', 'Percent Difference from First']
+		[
+			'Team Owner', 'Total Points', 'Forwards', 'Defense', 'Goalies',
+			'Difference from First', 'Percent Difference from First',
+		]
 	]
 
 
@@ -67,7 +75,8 @@ st.markdown("<h3 style='text-align: center;'>Points Simulator</h2>", unsafe_allo
 st.caption('Adjust scoring values and compare the resulting totals using each season\'s rosters.')
 st.caption('NOTE: This is experimental only and is basically vibe-coded with Copilot.')
 
-daily_points = get_daily_points()
+daily_points_csv_path = daily_points_module.ESPN_FANTASY_API_DAILY_ROSTERS_CSV_PATH
+daily_points = get_daily_points(os.path.getmtime(daily_points_csv_path))
 seasons = [season for season in daily_points.get_seasons() if int(season) >= EARLIEST_SUPPORTED_SEASON]
 season_labels = {format_season(season): season for season in seasons}
 season_select_container = st.container()
@@ -122,8 +131,11 @@ st.dataframe(
 		subset=comparison_columns,
 	).format({
 		'Total Points': '{:.2f}',
+		'Forwards': '{:.2f}',
+		'Defense': '{:.2f}',
+		'Goalies': '{:.2f}',
 		'Difference from First': '{:.2f}',
-		'Percent Difference from First': '{:.1f}',
+		'Percent Difference from First': '{:.1f}%',
 	}),
 	use_container_width=True,
 )
