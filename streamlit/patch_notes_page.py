@@ -2,6 +2,11 @@ import streamlit as st
 
 patch_notes_list = [
 """
+### v1.3.0
+* Added Points Simulator page
+""",
+
+"""
 ### v1.2.0
 * Added new Owner Profiles page
 * Added "Players Re-Added by Same Owner" stats
