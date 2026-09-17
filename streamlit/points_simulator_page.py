@@ -1,5 +1,7 @@
 import os
 import importlib
+import random
+import pandas as pd
 import streamlit as st
 
 # Workaround for import stats to deploy on streamlit app
@@ -28,7 +30,6 @@ ACTUAL_SCORING_VALUES = {
 	'HAT': 6.0,
 }
 EARLIEST_SUPPORTED_SEASON = 20232024
-
 
 @st.cache_resource
 def get_daily_points(data_modified_time):
@@ -68,6 +69,73 @@ def get_simulation_totals(daily_points, season, scoring_values):
 def reset_scoring_values():
 	for stat, default in ACTUAL_SCORING_VALUES.items():
 		st.session_state[f'scoring_{stat}'] = default
+
+
+def optimize_scoring_values(daily_points, season, current_values, target_reduction_percent):
+	season_df = daily_points._daily_rosters_df[
+		(daily_points._daily_rosters_df['season'] == season)
+		& ~daily_points._daily_rosters_df['lineupSlotId'].isin([7, 8])
+	].copy()
+	stat_totals = pd.DataFrame(index=season_df['owner'].unique())
+	for stat, actual_value in ACTUAL_SCORING_VALUES.items():
+		stat_totals[stat] = (
+			pd.to_numeric(season_df[stat], errors='coerce').fillna(0)
+			.div(actual_value)
+			.groupby(season_df['owner'])
+			.sum()
+			.reindex(stat_totals.index, fill_value=0)
+		)
+
+	def get_spread(values):
+		totals = stat_totals[list(values)] @ pd.Series(values)
+		first = totals.max()
+		last = totals.min()
+		return last / first if first else 0.0
+
+	target_spread = max(0.0, min(1.0, 1.0 - target_reduction_percent / 100.0))
+	random_generator = random.Random()
+	optimized_values = {
+		stat: round(
+			max(default * 0.25, min(default * 4.0, current_values[stat] * random_generator.uniform(0.75, 1.25))),
+			2,
+		)
+		for stat, default in ACTUAL_SCORING_VALUES.items()
+	}
+	optimized_spread = get_spread(optimized_values)
+	for _ in range(8):
+		improved = False
+		stat_order = list(ACTUAL_SCORING_VALUES)
+		random_generator.shuffle(stat_order)
+		for stat in stat_order:
+			default = ACTUAL_SCORING_VALUES[stat]
+			minimum = default * 0.25
+			maximum = default * 4.0
+			candidates = list({
+				max(minimum, min(maximum, optimized_values[stat] * factor))
+				for factor in (0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
+			})
+			random_generator.shuffle(candidates)
+			best_value = optimized_values[stat]
+			for candidate in candidates:
+				candidate_values = dict(optimized_values, **{stat: candidate})
+				candidate_spread = get_spread(candidate_values)
+				if candidate_spread > optimized_spread:
+					best_value = candidate
+					optimized_spread = candidate_spread
+					improved = True
+			optimized_values[stat] = best_value
+			if optimized_spread >= target_spread:
+				break
+		if optimized_spread >= target_spread or not improved:
+			break
+
+	for stat, value in optimized_values.items():
+		st.session_state[f'scoring_{stat}'] = round(value, 2)
+	st.session_state['optimization_message'] = (
+		f'Optimized spread: {(optimized_spread - 1) * 100:.1f}% '
+		f'({"within" if optimized_spread >= target_spread else "best found; target not reached"} '
+		f'-{target_reduction_percent:.1f}%).'
+	)
 
 
 st.set_page_config(layout='wide')
@@ -121,6 +189,35 @@ for index, (stat, default) in enumerate(ACTUAL_SCORING_VALUES.items()):
 		key=f'scoring_{stat}',
 		width='stretch',
 	)
+
+st.subheader('Optimize First - Last Place Spread')
+st.caption('Auto-adjusts scoring values to reduce the spread between first and last place.')
+st.session_state.setdefault('spread_reduction_percent', 5.0)
+optimization_columns = st.columns([1, 1, 6], gap='small')
+spread_reduction_percent = optimization_columns[0].number_input(
+	'Reduce spread by (%)',
+	min_value=0.0,
+	max_value=100.0,
+	step=0.5,
+	format='%.1f',
+	key='spread_reduction_percent',
+	width='stretch',
+)
+optimization_columns[1].markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+st.markdown(
+	'<style>.st-key-optimize-button button[kind="primary"] {background-color: #8bcf9b !important; border-color: #8bcf9b !important;}</style>',
+	unsafe_allow_html=True,
+)
+with optimization_columns[1].container(key='optimize-button'):
+	st.button(
+		'Optimize',
+		on_click=optimize_scoring_values,
+		args=(daily_points, selected_season, scoring_values, spread_reduction_percent),
+		width='stretch',
+		type='primary',
+	)
+if 'optimization_message' in st.session_state:
+	st.success(st.session_state['optimization_message'])
 
 st.subheader(f'Team Totals')
 totals = get_simulation_totals(daily_points, selected_season, scoring_values)
