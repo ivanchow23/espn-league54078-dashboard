@@ -1,6 +1,6 @@
 import streamlit as st
 
-VERSION = "v1.2.0"
+VERSION = "v1.3.0"
 
 # Define the pages
 season_dashboard_page = st.Page("season_dashboard_page.py", title="Season Dashboard")
