@@ -3,6 +3,7 @@ import importlib
 import random
 import pandas as pd
 import streamlit as st
+from PIL import Image, ImageOps
 
 # Workaround for import stats to deploy on streamlit app
 # This is because it currently uses uv pip install on the requirements.txt file
@@ -30,6 +31,11 @@ ACTUAL_SCORING_VALUES = {
 	'HAT': 6.0,
 }
 EARLIEST_SUPPORTED_SEASON = 20232024
+MOE_ASSET_PATHS = [
+	os.path.join(SCRIPT_DIR, 'assets', asset_name)
+	for asset_name in os.listdir(os.path.join(SCRIPT_DIR, 'assets'))
+	if asset_name.lower().startswith('moe') and asset_name.lower().endswith('.jpg')
+]
 
 @st.cache_resource
 def get_daily_points(data_modified_time):
@@ -136,6 +142,9 @@ def optimize_scoring_values(daily_points, season, current_values, target_reducti
 		f'({"within" if optimized_spread >= target_spread else "best found; target not reached"} '
 		f'-{target_reduction_percent:.1f}%).'
 	)
+	previous_moe_asset = st.session_state.get('selected_moe_asset')
+	available_moe_assets = [asset for asset in MOE_ASSET_PATHS if asset != previous_moe_asset]
+	st.session_state['selected_moe_asset'] = random.choice(available_moe_assets or MOE_ASSET_PATHS)
 
 
 st.set_page_config(layout='wide')
@@ -190,34 +199,41 @@ for index, (stat, default) in enumerate(ACTUAL_SCORING_VALUES.items()):
 		width='stretch',
 	)
 
-st.subheader('Optimize First - Last Place Spread')
-st.caption('Auto-adjusts scoring values to reduce the spread between first and last place.')
-st.session_state.setdefault('spread_reduction_percent', 5.0)
-optimization_columns = st.columns([1, 1, 6], gap='small')
-spread_reduction_percent = optimization_columns[0].number_input(
-	'Reduce spread by (%)',
-	min_value=0.0,
-	max_value=100.0,
-	step=0.5,
-	format='%.1f',
-	key='spread_reduction_percent',
-	width='stretch',
-)
-optimization_columns[1].markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
-st.markdown(
-	'<style>.st-key-optimize-button button[kind="primary"] {background-color: #8bcf9b !important; border-color: #8bcf9b !important;}</style>',
-	unsafe_allow_html=True,
-)
-with optimization_columns[1].container(key='optimize-button'):
-	st.button(
-		'Optimize',
-		on_click=optimize_scoring_values,
-		args=(daily_points, selected_season, scoring_values, spread_reduction_percent),
+optimizer_section_columns = st.columns([4, 1], gap='small')
+with optimizer_section_columns[0]:
+	st.subheader('Optimize First - Last Place Spread')
+	st.caption('Auto-adjusts scoring values to reduce the spread between first and last place.')
+	st.session_state.setdefault('spread_reduction_percent', 5.0)
+	optimization_columns = st.columns([1, 1, 4], gap='small')
+	spread_reduction_percent = optimization_columns[0].number_input(
+		'Reduce spread by (%)',
+		min_value=0.0,
+		max_value=100.0,
+		step=0.5,
+		format='%.1f',
+		key='spread_reduction_percent',
 		width='stretch',
-		type='primary',
 	)
-if 'optimization_message' in st.session_state:
-	st.success(st.session_state['optimization_message'])
+	optimization_columns[1].markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+	st.markdown(
+		'<style>.st-key-optimize-button button[kind="primary"] {background-color: #8bcf9b !important; border-color: #8bcf9b !important;}</style>',
+		unsafe_allow_html=True,
+	)
+	with optimization_columns[1].container(key='optimize-button'):
+		st.button(
+			'Optimize',
+			on_click=optimize_scoring_values,
+			args=(daily_points, selected_season, scoring_values, spread_reduction_percent),
+			width='stretch',
+			type='primary',
+		)
+	if 'optimization_message' in st.session_state:
+		st.success(st.session_state['optimization_message'])
+
+if 'selected_moe_asset' in st.session_state:
+	moe_image = Image.open(st.session_state['selected_moe_asset'])
+	moe_preview = ImageOps.fit(moe_image.convert('RGB'), (600, 700), centering=(0.5, 0.5))
+	optimizer_section_columns[1].image(moe_preview, width='stretch')
 
 st.subheader(f'Team Totals')
 totals = get_simulation_totals(daily_points, selected_season, scoring_values)
