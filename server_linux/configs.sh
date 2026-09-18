@@ -5,7 +5,7 @@
 # Seasons represent "end year" of the given season
 # Example: 2015 represents the 20142015 season
 START_SEASON=2015
-CURRENT_SEASON=2026
+CURRENT_SEASON=2027
 LEAGUE_ID=54078
 
 # Input and output data directories
