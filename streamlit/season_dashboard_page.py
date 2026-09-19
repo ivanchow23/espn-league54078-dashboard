@@ -86,8 +86,11 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     highest_daily_pts = 0
     highest_daily_pts_owner = ""
     for owner, owner_df in df.groupby('owner'):
-        max_daily_pts = round(owner_df['appliedTotal'].diff().max(), 2)
-        max_daily_pts_idx = owner_df['appliedTotal'].diff().idxmax()
+        daily_changes = owner_df['appliedTotal'].diff()
+        if not daily_changes.notna().any():
+            continue
+        max_daily_pts = round(daily_changes.max(), 2)
+        max_daily_pts_idx = daily_changes.idxmax()
         day_num = owner_df['scoringPeriodId'].loc[max_daily_pts_idx]
         if max_daily_pts > highest_daily_pts:
             highest_daily_pts = max_daily_pts
@@ -99,8 +102,12 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     highest_total_change_pts = 0
     highest_total_change_owner = ""
     for owner, owner_df in df.groupby('owner'):
-        start_pts = owner_df[owner_df['scoringPeriodId'] == earliest_scoring_period]['appliedTotal'].iloc[0]
-        curr_pts = owner_df[owner_df['scoringPeriodId'] == latest_scoring_period]['appliedTotal'].iloc[0]
+        start_pts_df = owner_df[owner_df['scoringPeriodId'] == earliest_scoring_period]['appliedTotal']
+        curr_pts_df = owner_df[owner_df['scoringPeriodId'] == latest_scoring_period]['appliedTotal']
+        if start_pts_df.empty or curr_pts_df.empty:
+            continue
+        start_pts = start_pts_df.iloc[0]
+        curr_pts = curr_pts_df.iloc[0]
         change_pts = round(curr_pts - start_pts, 2)
         if change_pts > highest_total_change_pts:
             highest_total_change_pts = change_pts
@@ -115,6 +122,8 @@ def update_daily_stats_metrics(container, df, last_num_days=0):
     day_num = 0
     for id, scoring_period_df in df.sort_values(by='appliedTotal', ascending=False).groupby('scoringPeriodId'):
         pts_diff_df = round(abs(scoring_period_df['appliedTotal'].diff()), 2).reset_index(drop=True)
+        if not pts_diff_df.notna().any():
+            continue
         min_val = pts_diff_df.min()
         rank = pts_diff_df.idxmin() + 1
         if min_val < smallest_gap_pts:

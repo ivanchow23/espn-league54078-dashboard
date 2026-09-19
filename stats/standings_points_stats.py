@@ -8,6 +8,7 @@ class StandingsPointsStats():
     def __init__(self):
         """ Default constructor. """
         self._standings_points_df = pd.read_csv(STANDINGS_POINTS_CSV_PATH)
+        self._standings_points_df['RK'] = pd.to_numeric(self._standings_points_df['RK'], errors='coerce')
 
     def get_unique_owners(self):
         """ Get list of unique owners. """
@@ -32,7 +33,8 @@ class StandingsPointsStats():
     def get_owner_ranking_count(self, owner):
         """ Returns number of times an owner has placed in a certain position. """
         owner_df = self._standings_points_df[self._standings_points_df['Owner'] == owner].copy()
-        owner_df['RK'] = owner_df['RK'].apply(self._number_ordinal)
+        owner_df = owner_df.dropna(subset=['RK'])
+        owner_df['RK'] = owner_df['RK'].apply(lambda rank: self._number_ordinal(int(rank)))
         return owner_df['RK'].value_counts().sort_index()
 
     def get_owner_seasons_normalized_by_league_avg(self, owner):
@@ -47,8 +49,9 @@ class StandingsPointsStats():
             league_avg = season_df['TOT'].mean()
 
             owner_season_tot = owner_df[owner_df['Season'] == season]['TOT'].iloc[0]
+            percent_above_avg = float('nan') if league_avg == 0 else round(((owner_season_tot - league_avg) / league_avg) * 100, 2)
             results.append({'Season': str(season),
-                            '+/- Avg %': round(((owner_season_tot - league_avg) / league_avg) * 100, 2),
+                            '+/- Avg %': percent_above_avg,
                             'Rank': owner_df[owner_df['Season'] == season]['RK'].iloc[0]})
 
         return pd.DataFrame(results)
@@ -56,13 +59,16 @@ class StandingsPointsStats():
     def get_owner_best_improved_season(self, owner):
         """ Returns information for an owner's best improved season. """
         owner_df = self._standings_points_df[self._standings_points_df['Owner'] == owner].copy()
+        owner_df['RK'] = pd.to_numeric(owner_df['RK'], errors='coerce')
+        owner_df = owner_df.dropna(subset=['RK'])
+        owner_df['RK'] = owner_df['RK'].astype(int)
         owner_df = owner_df.sort_values('Season').reset_index(drop=True)
         owner_df['RK Diff'] = owner_df['RK'].diff()
         idx = owner_df['RK Diff'].idxmin() # Get min value because lower rank is better
 
         season = str(owner_df.loc[idx, 'Season'])[:4] + "-" + str(owner_df.loc[idx, 'Season'])[4:]
-        prev_rk = self._number_ordinal(owner_df.loc[idx - 1, 'RK'])
-        rk = self._number_ordinal(owner_df.loc[idx, 'RK'])
+        prev_rk = self._number_ordinal(int(owner_df.loc[idx - 1, 'RK']))
+        rk = self._number_ordinal(int(owner_df.loc[idx, 'RK']))
         return season, prev_rk, rk
 
     def _number_ordinal(self, val):
